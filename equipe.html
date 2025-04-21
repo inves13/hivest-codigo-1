@@ -1,158 +1,109 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equipe</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minha Equipe</title>
   <style>
     body {
-      background-color: #121212;
-      color: white;
+      background-color: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
+      padding: 20px;
       margin: 0;
-      padding: 0;
     }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
+    h1 {
+      text-align: center;
       margin-bottom: 20px;
     }
-
-    .profile span {
-      font-size: 18px;
-    }
-
-    .team-details, .extract-list {
-      background-color: #1e1e1e;
-      margin-top: 20px;
+    .user-card {
+      background-color: #1c1c1c;
       padding: 15px;
-      border-radius: 8px;
-      width: 90%;
+      border-radius: 10px;
+      margin-bottom: 15px;
     }
-
-    .team-details p {
+    .user-card p {
+      margin: 5px 0;
+    }
+    .total {
+      margin-top: 30px;
+      text-align: center;
       font-size: 16px;
     }
-
-    .extract-item {
-      background-color: #2c2c2c;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
+    .voltar {
+      margin-top: 20px;
+      text-align: center;
     }
-
-    .extract-item p {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-
-    .nivel {
+    .voltar a {
+      color: #8A2BE2;
+      text-decoration: none;
       font-weight: bold;
-      color: #00ff00;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="header">
-        <div class="profile">
-          <span>Detalhes da Equipe</span>
-        </div>
-      </div>
-    </header>
+  <h1>Equipe Convidada</h1>
+  <div id="user-list"></div>
 
-    <section class="team-details">
-      <p><strong>LV1</strong> - Número de pessoas: <span id="lv1">0</span></p>
-      <p><strong>LV2</strong> - Número de pessoas: <span id="lv2">0</span></p>
-      <p><strong>LV3</strong> - Número de pessoas: <span id="lv3">0</span></p>
-    </section>
-
-    <section class="extract-list" id="extractList">
-      <h3>Extrato de Comissões</h3>
-      <!-- Itens adicionados pelo JS -->
-    </section>
+  <div class="total">
+    <p><strong>Total de usuários convidados:</strong> <span id="total-users">0</span></p>
+    <p><strong>Total em bônus:</strong> R$ <span id="total-bonus">0.00</span></p>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <div class="voltar">
+    <a href="H.html">← Voltar</a>
+  </div>
 
   <script>
-    // Configuração do Firebase (substitua pelos seus dados reais)
+    const meuCodigo = "1"; // código de convite
     const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_AUTH_DOMAIN",
-      databaseURL: "https://SEU_PROJETO.firebaseio.com",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
-      messagingSenderId: "SEU_SENDER_ID",
-      appId: "SEU_APP_ID"
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
 
-    // Inicialização do Firebase
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
 
-    // Recupera telefone do usuário logado
-    const telefoneUsuario = localStorage.getItem('telefone');
+    let totalBonus = 0;
+    let totalUsers = 0;
 
-    // Contadores por nível
-    const contador = [0, 0, 0];
-    const extractList = document.getElementById('extractList');
+    db.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
+      const userList = document.getElementById("user-list");
+      userList.innerHTML = "";
 
-    function formatarData(timestamp) {
-      const data = new Date(timestamp);
-      return `${data.toLocaleDateString()} ${data.toLocaleTimeString().slice(0, 5)}`;
-    }
+      snapshot.forEach(child => {
+        const data = child.val();
+        const nome = data.nome || "Sem nome";
+        const telefone = data.telefone || "Sem telefone";
+        const investimento = parseFloat(data.investimento || 0);
+        const bonus = investimento * 0.35;
 
-    function adicionarItem(nome, data, nivel) {
-      const item = document.createElement('div');
-      item.className = 'extract-item';
-      item.innerHTML = `
-        <p><strong>AF</strong> ${nome}</p>
-        <p>${data}</p>
-        <p>+ R$ 0,00</p>
-        <p class="nivel">Nível ${nivel}</p>
-      `;
-      extractList.appendChild(item);
-    }
+        totalUsers++;
+        totalBonus += bonus;
 
-    function buscarIndicados(codigo, nivel) {
-      if (nivel > 3) return;
-
-      database.ref('usuarios').orderByChild('codigoIndicado').equalTo(codigo).once('value', snapshot => {
-        snapshot.forEach(child => {
-          const dados = child.val();
-          const nome = dados.nome || 'Nome não informado';
-          const dataCadastro = formatarData(dados.timestamp || Date.now());
-
-          contador[nivel - 1]++;
-          adicionarItem(nome, dataCadastro, nivel);
-
-          buscarIndicados(child.key, nivel + 1); // Recursão para níveis subsequentes
-        });
-
-        // Atualiza contadores na tela
-        document.getElementById('lv1').textContent = contador[0];
-        document.getElementById('lv2').textContent = contador[1];
-        document.getElementById('lv3').textContent = contador[2];
+        const div = document.createElement("div");
+        div.className = "user-card";
+        div.innerHTML = `
+          <p><strong>Nome:</strong> ${nome}</p>
+          <p><strong>Telefone:</strong> ${telefone}</p>
+          <p><strong>Investimento:</strong> R$ ${investimento.toFixed(2)}</p>
+          <p><strong>Seu bônus:</strong> R$ ${bonus.toFixed(2)}</p>
+        `;
+        userList.appendChild(div);
       });
-    }
 
-    // Inicia busca apenas se telefone estiver salvo
-    if (telefoneUsuario) {
-      buscarIndicados(telefoneUsuario, 1);
-    }
+      document.getElementById("total-users").textContent = totalUsers;
+      document.getElementById("total-bonus").textContent = totalBonus.toFixed(2);
+    });
   </script>
 </body>
 </html>
