@@ -1,60 +1,71 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HInvest - Cadastro e Login</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <title>H Invest - Acesso</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
       padding: 20px;
-      text-align: center;
+      background: #111;
+      color: #fff;
     }
-    h2 {
-      color: #333;
-    }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+    input, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
     }
     input {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 90%;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      background: #222;
+      color: #fff;
     }
     button {
-      padding: 10px 20px;
-      background: green;
+      background-color: #28a745;
       color: white;
-      border: none;
-      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .form-box {
+      background: #1c1c1c;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    h2, h3 {
+      text-align: center;
     }
   </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="login-form">
-    <input type="text" id="login-telefone" placeholder="Telefone" required>
-    <input type="password" id="login-senha" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
-  </form>
+  <div class="form-box">
+    <h2>H Invest</h2>
 
-  <h2>Cadastro</h2>
-  <form id="cadastro-form">
-    <input type="text" id="cadastro-nome" placeholder="Nome completo" required>
-    <input type="text" id="cadastro-telefone" placeholder="Telefone" required>
-    <input type="password" id="cadastro-senha" placeholder="Senha" required>
-    <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (opcional)">
-    <button type="submit">Cadastrar</button>
-  </form>
+    <h3>Criar Conta</h3>
+    <form id="cadastro-form">
+      <input type="text" id="cadastro-nome" placeholder="Nome completo" required />
+      <input type="text" id="cadastro-telefone" placeholder="Telefone" required />
+      <input type="password" id="cadastro-senha" placeholder="Senha" required />
+      <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <h3>Entrar</h3>
+    <form id="login-form">
+      <input type="text" id="login-telefone" placeholder="Telefone" required />
+      <input type="password" id="login-senha" placeholder="Senha" required />
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -77,57 +88,34 @@
       const telefone = document.getElementById("cadastro-telefone").value;
       const senha = document.getElementById("cadastro-senha").value;
       const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
-      const codigoGerado = Math.floor(100000 + Math.random() * 900000);
 
       db.ref("usuarios/" + telefone).once("value").then(snapshot => {
         if (snapshot.exists()) {
-          alert("Já existe uma conta com esse telefone.");
-          return;
-        }
+          alert("Já existe uma conta cadastrada com esse número de telefone.");
+        } else {
+          // Buscar quantidade atual de usuários para gerar o número sequencial
+          db.ref("usuarios").once("value").then(snapshot => {
+            const total = snapshot.numChildren() + 1;
+            const meuLink = "https://inves13.github.io/hivest-codigo-" + total;
 
-        const novoUsuario = {
-          nome: nome,
-          senha: senha,
-          saldo: 20,
-          renda: 0,
-          recebimento: 0,
-          ultimoCheckin: "",
-          codigoIndicacao: codigoIndicacao,
-          codigoGerado: codigoGerado,
-          timestamp: Date.now()
-        };
-
-        db.ref("usuarios/" + telefone).set(novoUsuario).then(() => {
-          if (codigoIndicacao) {
-            db.ref("usuarios").once("value").then(snapshot => {
-              snapshot.forEach(child => {
-                const user = child.val();
-                if (user.codigoGerado == codigoIndicacao) {
-                  const bonus = 20 * 0.35;
-                  const novoSaldo = (user.saldo || 0) + bonus;
-                  const novaRenda = (user.renda || 0) + bonus;
-
-                  db.ref("usuarios/" + child.key).update({
-                    saldo: novoSaldo,
-                    renda: novaRenda
-                  });
-
-                  db.ref("usuarios/" + child.key + "/indicados/" + telefone).set({
-                    nome: nome,
-                    telefone: telefone,
-                    valorInvestido: 20,
-                    bonusGerado: bonus
-                  });
-                }
-              });
+            db.ref("usuarios/" + telefone).set({
+              nome: nome,
+              senha: senha,
+              saldo: 20,
+              renda: 0,
+              recebimento: 0,
+              ultimoCheckin: "",
+              codigoIndicacao: codigoIndicacao,
+              meuLink: meuLink,
+              timestamp: Date.now()
+            }).then(() => {
+              localStorage.setItem("telefoneLogado", telefone);
+              window.location.href = "H.html";
+            }).catch((error) => {
+              alert("Erro ao cadastrar: " + error.message);
             });
-          }
-
-          localStorage.setItem("telefoneLogado", telefone);
-          window.location.href = "H.html";
-        }).catch(error => {
-          alert("Erro ao cadastrar: " + error.message);
-        });
+          });
+        }
       });
     });
 
@@ -146,14 +134,6 @@
           alert("Telefone ou senha incorretos!");
         }
       });
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const codigo = urlParams.get("codigo");
-      if (codigo) {
-        document.getElementById("cadastro-codigo").value = codigo;
-      }
     });
   </script>
 </body>
