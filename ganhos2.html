@@ -21,18 +21,13 @@
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       width: 100%;
       margin-bottom: 20px;
     }
     .profile span {
       font-size: 18px;
       font-weight: bold;
-    }
-    #indicador-info {
-      font-size: 14px;
-      color: #bbb;
-      margin-top: 4px;
     }
     .details-btn {
       background-color: #8A2BE2;
@@ -55,11 +50,11 @@
     .copy-btn {
       background-color: #8A2BE2;
       color: white;
-      padding: 8px;
+      padding: 6px 10px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 5px;
+      font-size: 14px;
     }
     .footer {
       display: flex;
@@ -89,7 +84,6 @@
     <div class="header">
       <div class="profile">
         <span>Minha equipe</span>
-        <div id="indicador-info"></div>
       </div>
       <button class="details-btn" onclick="window.location.href='equipe.html'">Detalhes da equipe</button>
     </div>
@@ -105,15 +99,19 @@
 
     <section class="invite-section">
       <div class="invite-code">
-        <span>Código de convite</span>
-        <p id="invite-code">Carregando...</p>
-        <button class="copy-btn" onclick="copyText('invite-code')">Cópia</button>
+        <span>Código de convite</span><br>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <p id="invite-code" style="margin: 0;">Carregando...</p>
+          <button class="copy-btn" onclick="copyText('invite-code')">Copiar</button>
+        </div>
       </div>
 
       <div class="invite-link">
-        <span>Link de convite</span>
-        <p id="invite-link">Carregando...</p>
-        <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
+        <span>Link de convite</span><br>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <p id="invite-link" style="margin: 0;">Carregando...</p>
+          <button class="copy-btn" onclick="copyText('invite-link')">Copiar</button>
+        </div>
       </div>
 
       <div class="invited-list">
@@ -132,6 +130,7 @@
   </div>
 
   <script>
+    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -159,18 +158,6 @@
     async function gerarCodigoNovo() {
       const snapshot = await db.ref("usuarios").once("value");
       return snapshot.numChildren() + 1;
-    }
-
-    async function exibirIndicador(codigoIndicado) {
-      if (codigoIndicado) {
-        const snapshot = await db.ref("usuarios").orderByChild("codigo").equalTo(Number(codigoIndicado)).once("value");
-        if (snapshot.exists()) {
-          const dados = Object.values(snapshot.val())[0];
-          const nome = dados.nome || "Desconhecido";
-          document.getElementById("indicador-info").textContent =
-            `Você foi indicado por: ${nome} (Código: ${codigoIndicado})`;
-        }
-      }
     }
 
     async function iniciarSistema() {
@@ -201,9 +188,7 @@
         await db.ref("usuarios/" + usuarioId).set(novoUsuario);
       }
 
-      await exibirIndicador(codigoIndicado);
-
-      const linkConvite = `https://inves13.github.io/hivest-codigo-1?codigo=${meuCodigo}`;
+      const linkConvite = `https://inves13.github.io/hivest-codigo-${meuCodigo}`;
       document.getElementById("invite-code").textContent = meuCodigo;
       document.getElementById("invite-link").textContent = linkConvite;
 
