@@ -139,7 +139,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Utilidade para copiar
     function copyText(id) {
       const text = document.getElementById(id).textContent;
       navigator.clipboard.writeText(text).then(() => {
@@ -147,41 +146,48 @@
       });
     }
 
-    // Função para obter o código ?codigo=
     function getCodigoIndicado() {
       const params = new URLSearchParams(window.location.search);
       return params.get('codigo') || null;
     }
 
-    // Função para gerar um novo código automático
     async function gerarCodigoNovo() {
       const snapshot = await db.ref("usuarios").once("value");
       return snapshot.numChildren() + 1;
     }
 
     async function iniciarSistema() {
+      let usuarioId = localStorage.getItem("usuarioId");
+      let meuCodigo;
       let codigoIndicado = getCodigoIndicado();
-      let meuCodigo = await gerarCodigoNovo();
 
-      // Simulando usuário logado (use autenticação real depois)
-      const usuarioId = "usuario_" + meuCodigo;
+      if (usuarioId) {
+        const snapshot = await db.ref("usuarios/" + usuarioId).once("value");
+        if (snapshot.exists()) {
+          meuCodigo = snapshot.val().codigo;
+        } else {
+          usuarioId = null;
+        }
+      }
 
-      // Cadastrar o novo usuário
-      const usuario = {
-        nome: "Usuário " + meuCodigo,
-        investimento: 0,
-        codigo: meuCodigo,
-        codigoIndicado: codigoIndicado || null
-      };
+      if (!usuarioId) {
+        meuCodigo = await gerarCodigoNovo();
+        usuarioId = "usuario_" + meuCodigo;
+        localStorage.setItem("usuarioId", usuarioId);
 
-      await db.ref("usuarios/" + usuarioId).set(usuario);
+        const novoUsuario = {
+          nome: "Usuário " + meuCodigo,
+          investimento: 0,
+          codigo: meuCodigo,
+          codigoIndicado: codigoIndicado
+        };
+        await db.ref("usuarios/" + usuarioId).set(novoUsuario);
+      }
 
-      // Mostrar código e link
       const linkConvite = `https://inves13.github.io/hivest-codigo-1?codigo=${meuCodigo}`;
       document.getElementById("invite-code").textContent = meuCodigo;
       document.getElementById("invite-link").textContent = linkConvite;
 
-      // Mostrar afiliados
       db.ref("usuarios").orderByChild("codigoIndicado").equalTo(String(meuCodigo)).once("value", snapshot => {
         let totalBonus = 0;
         let totalUsers = 0;
@@ -206,7 +212,6 @@
       });
     }
 
-    // Iniciar tudo
     iniciarSistema();
   </script>
 </body>
