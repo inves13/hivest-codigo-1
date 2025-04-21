@@ -89,14 +89,14 @@
       const senha = document.getElementById("cadastro-senha").value;
       const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
 
+      // Gerar código de indicação único para o novo usuário
+      const codigoGerado = Math.floor(Math.random() * 10000); // Código único
+
       db.ref("usuarios/" + telefone).once("value").then(snapshot => {
         const data = snapshot.val();
         if (data) {
           alert("Já existe uma conta cadastrada com esse número de telefone.");
         } else {
-          // Gerar o código de indicação
-          let codigoGerado = Math.floor(Math.random() * 10000); // Gerar um código único
-          // Se houver código de indicação, associar ao novo usuário
           db.ref("usuarios/" + telefone).set({
             nome: nome,
             senha: senha,
@@ -104,8 +104,8 @@
             renda: 0,
             recebimento: 0,
             ultimoCheckin: "",
-            codigoIndicacao: codigoIndicacao,
-            codigoGerado: codigoGerado, // Adicionar o código gerado
+            codigoIndicacao: codigoIndicacao,  // Código de indicação do usuário anterior
+            codigoGerado: codigoGerado,        // Código gerado para o novo usuário
             timestamp: Date.now()
           }).then(() => {
             localStorage.setItem("telefoneLogado", telefone);
