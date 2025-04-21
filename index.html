@@ -94,6 +94,9 @@
         if (data) {
           alert("Já existe uma conta cadastrada com esse número de telefone.");
         } else {
+          // Gerar o código de indicação
+          let codigoGerado = Math.floor(Math.random() * 10000); // Gerar um código único
+          // Se houver código de indicação, associar ao novo usuário
           db.ref("usuarios/" + telefone).set({
             nome: nome,
             senha: senha,
@@ -102,6 +105,7 @@
             recebimento: 0,
             ultimoCheckin: "",
             codigoIndicacao: codigoIndicacao,
+            codigoGerado: codigoGerado, // Adicionar o código gerado
             timestamp: Date.now()
           }).then(() => {
             localStorage.setItem("telefoneLogado", telefone);
