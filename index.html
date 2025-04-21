@@ -129,6 +129,15 @@
         }
       });
     });
+
+    // Preencher o código de indicação automaticamente pela URL
+    window.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const codigo = urlParams.get("codigo");
+      if (codigo) {
+        document.getElementById("cadastro-codigo").value = codigo;
+      }
+    });
   </script>
 </body>
 </html>
