@@ -81,6 +81,15 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Verifica código de indicação na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const codigoIndicado = urlParams.get("codigo");
+
+    // Se o código estiver na URL, preenche o campo de indicação automaticamente
+    if (codigoIndicado) {
+      document.getElementById("cadastro-codigo").value = codigoIndicado;
+    }
+
     // Cadastro
     document.getElementById("cadastro-form").addEventListener("submit", function(e) {
       e.preventDefault();
