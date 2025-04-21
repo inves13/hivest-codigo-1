@@ -3,58 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HInvest - Cadastro e Login</title>
+  <title>HInvest - Cadastro/Login</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-      text-align: center;
-    }
-    h2 {
-      color: #333;
-    }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    input {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 90%;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      padding: 10px 20px;
-      background: green;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-  </style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="login-form">
-    <input type="text" id="login-telefone" placeholder="Telefone" required>
-    <input type="password" id="login-senha" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
-  </form>
-
   <h2>Cadastro</h2>
-  <form id="cadastro-form">
-    <input type="text" id="cadastro-nome" placeholder="Nome completo" required>
-    <input type="text" id="cadastro-telefone" placeholder="Telefone" required>
-    <input type="password" id="cadastro-senha" placeholder="Senha" required>
-    <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (opcional)">
-    <button type="submit">Cadastrar</button>
-  </form>
+  <input type="text" id="nome" placeholder="Nome"><br><br>
+  <input type="text" id="telefone" placeholder="Telefone"><br><br>
+  <input type="password" id="senha" placeholder="Senha"><br><br>
+  <button onclick="cadastrar()">Cadastrar</button>
+
+  <h2>Login</h2>
+  <input type="text" id="loginTelefone" placeholder="Telefone"><br><br>
+  <input type="password" id="loginSenha" placeholder="Senha"><br><br>
+  <button onclick="logar()">Entrar</button>
 
   <script>
     const firebaseConfig = {
@@ -68,93 +31,88 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const database = firebase.database();
 
-    // Cadastro
-    document.getElementById("cadastro-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const nome = document.getElementById("cadastro-nome").value;
-      const telefone = document.getElementById("cadastro-telefone").value;
-      const senha = document.getElementById("cadastro-senha").value;
-      const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
-      const codigoGerado = Math.floor(100000 + Math.random() * 900000);
+    function gerarCodigoUnico() {
+      return Math.floor(100000 + Math.random() * 900000).toString(); // Ex: "537298"
+    }
 
-      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
-        if (snapshot.exists()) {
-          alert("Já existe uma conta com esse telefone.");
-          return;
-        }
+    function cadastrar() {
+      const nome = document.getElementById("nome").value;
+      const telefone = document.getElementById("telefone").value;
+      const senha = document.getElementById("senha").value;
+      const codigoGerado = gerarCodigoUnico();
 
-        const novoUsuario = {
-          nome: nome,
-          senha: senha,
-          saldo: 20,
-          renda: 0,
-          recebimento: 0,
-          ultimoCheckin: "",
-          codigoIndicacao: codigoIndicacao,
-          codigoGerado: codigoGerado,
-          timestamp: Date.now()
-        };
-
-        db.ref("usuarios/" + telefone).set(novoUsuario).then(() => {
-          if (codigoIndicacao) {
-            db.ref("usuarios").once("value").then(snapshot => {
-              snapshot.forEach(child => {
-                const user = child.val();
-                if (user.codigoGerado == codigoIndicacao) {
-                  const bonus = 20 * 0.35;
-                  const novoSaldo = (user.saldo || 0) + bonus;
-                  const novaRenda = (user.renda || 0) + bonus;
-
-                  db.ref("usuarios/" + child.key).update({
-                    saldo: novoSaldo,
-                    renda: novaRenda
-                  });
-
-                  db.ref("usuarios/" + child.key + "/indicados/" + telefone).set({
-                    nome: nome,
-                    telefone: telefone,
-                    valorInvestido: 20,
-                    bonusGerado: bonus
-                  });
-                }
-              });
-            });
-          }
-
-          localStorage.setItem("telefoneLogado", telefone);
-          window.location.href = "H.html";
-        }).catch(error => {
-          alert("Erro ao cadastrar: " + error.message);
-        });
-      });
-    });
-
-    // Login
-    document.getElementById("login-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const telefone = document.getElementById("login-telefone").value;
-      const senha = document.getElementById("login-senha").value;
-
-      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data && data.senha === senha) {
-          localStorage.setItem("telefoneLogado", telefone);
-          window.location.href = "H.html";
-        } else {
-          alert("Telefone ou senha incorretos!");
-        }
-      });
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const codigo = urlParams.get("codigo");
-      if (codigo) {
-        document.getElementById("cadastro-codigo").value = codigo;
+      if (!nome || !telefone || !senha) {
+        alert("Preencha todos os campos.");
+        return;
       }
-    });
+
+      const usuarioRef = database.ref("usuarios/" + telefone);
+      usuarioRef.once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          alert("Telefone já cadastrado.");
+        } else {
+          const urlParams = new URLSearchParams(window.location.search);
+          const codigoIndicador = urlParams.get("codigo");
+
+          // Salva o novo usuário
+          usuarioRef.set({
+            nome: nome,
+            telefone: telefone,
+            senha: senha,
+            codigoGerado: codigoGerado,
+            indicados: {}
+          }).then(() => {
+            // Se veio com código de indicação, registra o novo usuário como indicado
+            if (codigoIndicador) {
+              database.ref("usuarios").once("value").then(snap => {
+                snap.forEach(child => {
+                  const usuario = child.val();
+                  if (usuario.codigoGerado === codigoIndicador) {
+                    const telIndicador = child.key;
+                    database.ref("usuarios/" + telIndicador + "/indicados/" + telefone).set({
+                      nome: nome,
+                      telefone: telefone,
+                      bonusGerado: 0
+                    });
+                  }
+                });
+              });
+            }
+
+            alert("Cadastro realizado com sucesso!");
+            localStorage.setItem("telefoneLogado", telefone);
+            window.location.href = "h.html";
+          });
+        }
+      });
+    }
+
+    function logar() {
+      const telefone = document.getElementById("loginTelefone").value;
+      const senha = document.getElementById("loginSenha").value;
+
+      if (!telefone || !senha) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      database.ref("usuarios/" + telefone).once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          const usuario = snapshot.val();
+          if (usuario.senha === senha) {
+            localStorage.setItem("telefoneLogado", telefone);
+            alert("Login bem-sucedido!");
+            window.location.href = "h.html";
+          } else {
+            alert("Senha incorreta.");
+          }
+        } else {
+          alert("Usuário não encontrado.");
+        }
+      });
+    }
   </script>
 </body>
 </html>
