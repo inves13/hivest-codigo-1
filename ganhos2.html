@@ -151,9 +151,8 @@
     }
 
     function getCodigoIndicado() {
-      const path = window.location.pathname;
-      const match = path.match(/hivest-codigo-(\d+)/);
-      return match ? match[1] : null;
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('codigo');
     }
 
     async function gerarCodigoNovo() {
@@ -164,7 +163,7 @@
     async function iniciarSistema() {
       let usuarioId = localStorage.getItem("usuarioId");
       let meuCodigo;
-      let codigoIndicado = getCodigoIndicado(); // agora pega direto do link
+      let codigoIndicado = getCodigoIndicado(); // agora pega diretamente da URL
 
       if (usuarioId) {
         const snapshot = await db.ref("usuarios/" + usuarioId).once("value");
@@ -189,7 +188,7 @@
         await db.ref("usuarios/" + usuarioId).set(novoUsuario);
       }
 
-      const linkConvite = `https://inves13.github.io/hivest-codigo-${meuCodigo}`;
+      const linkConvite = `https://inves13.github.io/hivest-codigo-2?codigo=${meuCodigo}`;
       document.getElementById("invite-code").textContent = meuCodigo;
       document.getElementById("invite-link").textContent = linkConvite;
 
