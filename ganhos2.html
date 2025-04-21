@@ -12,14 +12,12 @@
       margin: 0;
       padding: 0;
     }
-
     .container {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 10px;
     }
-
     .header {
       display: flex;
       justify-content: space-between;
@@ -27,12 +25,10 @@
       width: 100%;
       margin-bottom: 20px;
     }
-
     .profile span {
       font-size: 18px;
       font-weight: bold;
     }
-
     .details-btn {
       background-color: #8A2BE2;
       color: white;
@@ -41,19 +37,16 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     .team-section, .invite-section {
       width: 100%;
       margin-bottom: 20px;
     }
-
     .team-level, .invite-code, .invite-link {
       background-color: #1e1e1e;
       margin: 10px 0;
       padding: 15px;
       border-radius: 8px;
     }
-
     .copy-btn {
       background-color: #8A2BE2;
       color: white;
@@ -63,20 +56,17 @@
       cursor: pointer;
       margin-top: 5px;
     }
-
     .footer {
       display: flex;
       flex-direction: column;
       align-items: center;
       margin-top: 20px;
     }
-
     .bonus-info {
       font-size: 14px;
       margin-top: 10px;
       text-align: center;
     }
-
     .invited-list {
       background-color: #1e1e1e;
       padding: 10px;
@@ -86,7 +76,6 @@
     }
   </style>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -137,7 +126,7 @@
   </div>
 
   <script>
-    // Configuração Firebase
+    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -147,11 +136,10 @@
       messagingSenderId: "646397677016",
       appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
 
-    // Função para copiar texto
+    // Utilidade para copiar
     function copyText(id) {
       const text = document.getElementById(id).textContent;
       navigator.clipboard.writeText(text).then(() => {
@@ -159,37 +147,67 @@
       });
     }
 
-    // CÓDIGO DE CONVITE FIXO DO USUÁRIO PRINCIPAL
-    const meuCodigo = "1";
-    const meuLink = `https://hinvest.site/?codigo=${meuCodigo}`;
+    // Função para obter o código ?codigo=
+    function getCodigoIndicado() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('codigo') || null;
+    }
 
-    // Exibir código e link
-    document.getElementById("invite-code").textContent = meuCodigo;
-    document.getElementById("invite-link").textContent = meuLink;
+    // Função para gerar um novo código automático
+    async function gerarCodigoNovo() {
+      const snapshot = await db.ref("usuarios").once("value");
+      return snapshot.numChildren() + 1;
+    }
 
-    // Carregar convidados (afiliados)
-    database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
-      let totalBonus = 0;
-      let totalUsers = 0;
-      const list = document.getElementById("invited-users");
-      list.innerHTML = "";
+    async function iniciarSistema() {
+      let codigoIndicado = getCodigoIndicado();
+      let meuCodigo = await gerarCodigoNovo();
 
-      snapshot.forEach(child => {
-        const nome = child.val().nome;
-        const investimento = parseFloat(child.val().investimento || 0);
-        const bonus = investimento * 0.35;
-        totalBonus += bonus;
-        totalUsers++;
+      // Simulando usuário logado (use autenticação real depois)
+      const usuarioId = "usuario_" + meuCodigo;
 
-        const li = document.createElement("li");
-        li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-        list.appendChild(li);
+      // Cadastrar o novo usuário
+      const usuario = {
+        nome: "Usuário " + meuCodigo,
+        investimento: 0,
+        codigo: meuCodigo,
+        codigoIndicado: codigoIndicado || null
+      };
+
+      await db.ref("usuarios/" + usuarioId).set(usuario);
+
+      // Mostrar código e link
+      const linkConvite = `https://inves13.github.io/hivest-codigo-1?codigo=${meuCodigo}`;
+      document.getElementById("invite-code").textContent = meuCodigo;
+      document.getElementById("invite-link").textContent = linkConvite;
+
+      // Mostrar afiliados
+      db.ref("usuarios").orderByChild("codigoIndicado").equalTo(String(meuCodigo)).once("value", snapshot => {
+        let totalBonus = 0;
+        let totalUsers = 0;
+        const list = document.getElementById("invited-users");
+        list.innerHTML = "";
+
+        snapshot.forEach(child => {
+          const nome = child.val().nome;
+          const investimento = parseFloat(child.val().investimento || 0);
+          const bonus = investimento * 0.35;
+          totalBonus += bonus;
+          totalUsers++;
+
+          const li = document.createElement("li");
+          li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+          list.appendChild(li);
+        });
+
+        document.getElementById("lv1-bonus").textContent = `R$ ${totalBonus.toFixed(2)} Bônus`;
+        document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
+        document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
       });
+    }
 
-      document.getElementById("lv1-bonus").textContent = `R$ ${totalBonus.toFixed(2)} Bônus`;
-      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
-      document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
-    });
+    // Iniciar tudo
+    iniciarSistema();
   </script>
 </body>
 </html>
