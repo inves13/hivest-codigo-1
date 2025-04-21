@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carteira e Saque</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR -->
+  <header style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: #f5f5f5; border-bottom: 1px solid #ccc;">
+    <h2 style="margin: 0;">Carteira</h2>
+    <!-- Link para ver o extrato -->
+    <a href="extrato.html" style="text-decoration: none; color: #007bff;">Ver Extrato</a>
+  </header>
+
+  <!-- SALDOS -->
+  <section class="carteira">
+    <div class="saldos">
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="saldo-conta">R$ 0.00</p>
+        <span>Saldo da conta</span>
+      </div>
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="renda-acumulada">R$ 0.00</p>
+        <span>Renda acumulada</span>
+      </div>
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="valor-recebimento">R$ 0.00</p>
+        <span>Valor de recebimento</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTA BANCÁRIA -->
+  <section class="conta">
+    <h2>Conta Bancária</h2>
+    <label>Nome do Titular:</label>
+    <input type="text" id="nomeTitular" placeholder="Nome completo" />
+
+    <label>Tipo de chave PIX:</label>
+    <select id="tipoChave">
+      <option value="email">Email</option>
+      <option value="telefone">Telefone</option>
+      <option value="cpf">CPF</option>
+    </select>
+
+    <label>Chave PIX:</label>
+    <input type="text" id="chavePix" placeholder="Sua chave PIX" />
+    <button id="salvarConta">Salvar Conta</button>
+  </section>
+
+  <!-- SAQUE -->
+  <section class="saque">
+    <h2>Saque</h2>
+    <label>Valor para saque (mínimo R$20):</label>
+    <input type="number" id="valorSaque" placeholder="Ex: 100" oninput="calcularValorRecebido()" />
+    <p><strong>Valor a ser recebido: <span id="valorLiquido">R$ 0.00</span></strong></p>
+    <button id="confirmarSaque">Sacar</button>
+    <p id="status"></p>
+  </section>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const userId = localStorage.getItem("telefoneLogado");
+    const userRef = db.ref("usuarios/" + userId);
+
+    // Mostrar saldos
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!userId) {
+        alert("Usuário não logado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const saldoConta = parseFloat(data.saldoConta ?? data.saldo ?? 20).toFixed(2);
+        const renda = parseFloat(data.renda || 0).toFixed(2);
+        const recebimento = parseFloat(data.recebimento || 0).toFixed(2);
+
+        document.getElementById("saldo-conta").textContent = "R$ " + saldoConta;
+        document.getElementById("renda-acumulada").textContent = "R$ " + renda;
+        document.getElementById("valor-recebimento").textContent = "R$ " + recebimento;
+
+        // Se os dados bancários já estiverem salvos, não exibe o formulário
+        if (data.contaBancaria) {
+          document.getElementById("nomeTitular").value = data.contaBancaria.nomeTitular;
+          document.getElementById("tipoChave").value = data.contaBancaria.tipoChave;
+          document.getElementById("chavePix").value = data.contaBancaria.chavePix;
+          document.getElementById("salvarConta").disabled = true; // Desativa o botão de salvar
+        }
+      });
+    });
+
+    // Salvar conta bancária
+    document.getElementById("salvarConta").addEventListener("click", () => {
+      const nome = document.getElementById("nomeTitular").value;
+      const tipo = document.getElementById("tipoChave").value;
+      const chave = document.getElementById("chavePix").value;
+
+      if (!nome || !chave) {
+        alert("Preencha todos os campos da conta.");
+        return;
+      }
+
+      userRef.update({
+        contaBancaria: {
+          nomeTitular: nome,
+          tipoChave: tipo,
+          chavePix: chave
+        }
+      });
+
+      alert("Conta bancária salva com sucesso!");
+      document.getElementById("salvarConta").disabled = true; // Desativa o botão após salvar
+    });
+
+    // Função para calcular o valor líquido após a taxa de 12%
+    function calcularValorRecebido() {
+      const valor = parseFloat(document.getElementById("valorSaque").value);
+      if (!isNaN(valor) && valor >= 20) {
+        const taxa = valor * 0.12;
+        const valorLiquido = valor - taxa;
+        document.getElementById("valorLiquido").textContent = "R$ " + valorLiquido.toFixed(2);
+      }
+    }
+
+    // Fazer saque
+    document.getElementById("confirmarSaque").addEventListener("click", async () => {
+      const valor = parseFloat(document.getElementById("valorSaque").value);
+      if (isNaN(valor) || valor < 20) {
+        alert("O valor mínimo para saque é R$20.");
+        return;
+      }
+
+      const snapshot = await userRef.once("value");
+      const data = snapshot.val() || {};
+      const saldoAtual = parseFloat(data.saldoConta ?? 0);
+
+      if (valor > saldoAtual) {
+        alert("Saldo insuficiente.");
+        return;
+      }
+
+      const taxa = valor * 0.12;
+      const valorLiquido = valor - taxa;
+      const novoSaldo = saldoAtual - valor;
+
+      // Atualiza dados do usuário
+      await userRef.update({
+        saldoConta: novoSaldo,
+        recebimento: valorLiquido
+      });
+
+      // Registra a retirada no extrato
+      const extratoRef = db.ref("usuarios/" + userId + "/extratoRetirada").push();
+      extratoRef.set({
+        valor: valor.toFixed(2),
+        recebimento: valorLiquido.toFixed(2),
+        status: "Aprovado",
+        ultimoCheckin: new Date().toLocaleString()
+      });
+
+      // Registra no painel do admin
+      const painelRef = db.ref("painel/saques").push();
+      painelRef.set({
+        telefone: userId,
+        nomeTitular: data?.contaBancaria?.nomeTitular ?? "Não informado",
+        chavePix: data?.contaBancaria?.chavePix ?? "Não informado",
+        tipoChave: data?.contaBancaria?.tipoChave ?? "Não informado",
+        valor: valor,
+        status: "Aprovado",
+        horario: new Date().toLocaleString()
+      });
+
+      alert("Saque solicitado com sucesso!");
+      window.location.href = "index.html";
+    });
+
+  </script>
+</body>
+</html>

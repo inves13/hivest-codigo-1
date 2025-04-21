@@ -1,0 +1,304 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #000; /* Fundo preto */
+    color: #fff; /* Texto branco */
+}
+
+/* Banner */
+.banner {
+    background: linear-gradient(135deg, #111, #222);
+    color: #ffcc00;
+    text-align: center;
+    padding: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Menu de ações na horizontal */
+.acoes {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px;
+    background: #111;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.acoes .botao {
+    display: flex;
+    align-items: center;
+    background: #222;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    text-align: center;
+    justify-content: center;
+    transition: 0.3s ease-in-out;
+    flex: 1;
+    margin: 5px;
+    min-width: 100px;
+}
+
+.acoes .botao:hover {
+    background: #333;
+    transform: scale(1.05);
+}
+
+.acoes .botao img {
+    width: 18px;
+    margin-right: 5px;
+}
+
+/* Notificação agora com valores passando */
+.notificacao {
+    width: 100%;
+    background: #e6b800;
+    padding: 10px;
+    font-weight: bold;
+    color: #000;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.notificacao .icone-sino {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+/* Animação para rolar a notificação */
+.notificacao marquee {
+    animation: moverTexto 10s linear infinite;
+}
+
+@keyframes moverTexto {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* Carteira */
+.carteira {
+    background: #111;
+    padding: 20px;
+    margin: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.carteira h2 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+}
+
+.saldos {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.saldo {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    width: 30%;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.saldo img {
+    width: 40px;
+}
+
+.saldo p {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.saldo span {
+    font-size: 0.9em;
+    color: #bbb;
+}
+
+/* Formulário de Recarga */
+.recarga {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+#valor-recarga {
+    padding: 10px;
+    font-size: 16px;
+    width: 150px;
+    margin-right: 10px;
+    background-color: #333;
+    border: 1px solid #555;
+    color: white;
+}
+
+#botao-recarga {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#botao-recarga:hover {
+    background-color: #218838;
+    transform: scale(1.1);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Formulário de Saque */
+.saque {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+#valor-saque {
+    padding: 10px;
+    font-size: 16px;
+    width: 150px;
+    margin-right: 10px;
+    background-color: #333;
+    border: 1px solid #555;
+    color: white;
+}
+
+#botao-saque {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#botao-saque:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Menu inferior */
+.menu-inferior {
+    display: flex;
+    justify-content: space-around;
+    background: #111;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.menu-inferior a {
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    padding: 10px;
+    text-decoration: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-inferior a img {
+    width: 20px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.menu-inferior a.ativo {
+    font-weight: bold;
+    border-bottom: 2px solid white;
+}
+
+/* Media query */
+@media screen and (max-width: 768px) {
+    .saldos {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .saldo {
+        width: 80%;
+        margin-bottom: 10px;
+    }
+
+    .menu-inferior a {
+        font-size: 12px;
+    }
+}
+
+/* --- ESTILO DO EXTRATO --- */
+.extrato-container {
+    background: #111;
+    color: #fff;
+    padding: 20px;
+    margin-bottom: 70px;
+}
+
+.extrato-container h2 {
+    color: #ffcc00;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.linha-extrato {
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.linha-extrato span {
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #ccc;
+}
+
+.linha-extrato strong {
+    font-size: 16px;
+    color: #fff;
+}
+
+.valor-positivo {
+    color: #28a745;
+}
+
+.valor-negativo {
+    color: #dc3545;
+}

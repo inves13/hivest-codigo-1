@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>H Invest - Acesso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #111;
+      color: #fff;
+    }
+    input, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+    input {
+      background: #222;
+      color: #fff;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .form-box {
+      background: #1c1c1c;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    h2, h3 {
+      text-align: center;
+    }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="form-box">
+    <h2>H Invest</h2>
+
+    <h3>Criar Conta</h3>
+    <form id="cadastro-form">
+      <input type="text" id="cadastro-nome" placeholder="Nome completo" required />
+      <input type="text" id="cadastro-telefone" placeholder="Telefone" required />
+      <input type="password" id="cadastro-senha" placeholder="Senha" required />
+      <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <h3>Entrar</h3>
+    <form id="login-form">
+      <input type="text" id="login-telefone" placeholder="Telefone" required />
+      <input type="password" id="login-senha" placeholder="Senha" required />
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Cadastro
+    document.getElementById("cadastro-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("cadastro-nome").value;
+      const telefone = document.getElementById("cadastro-telefone").value;
+      const senha = document.getElementById("cadastro-senha").value;
+      const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
+
+      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          alert("Já existe uma conta cadastrada com esse número de telefone.");
+        } else {
+          db.ref("usuarios/" + telefone).set({
+            nome: nome,
+            senha: senha,
+            saldo: 20,
+            renda: 0,
+            recebimento: 0,
+            ultimoCheckin: "",
+            codigoIndicacao: codigoIndicacao,
+            timestamp: Date.now()
+          }).then(() => {
+            localStorage.setItem("telefoneLogado", telefone);
+            window.location.href = "H.html";
+          }).catch((error) => {
+            alert("Erro ao cadastrar: " + error.message);
+          });
+        }
+      });
+    });
+
+    // Login
+    document.getElementById("login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const telefone = document.getElementById("login-telefone").value;
+      const senha = document.getElementById("login-senha").value;
+
+      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (data && data.senha === senha) {
+          localStorage.setItem("telefoneLogado", telefone);
+          window.location.href = "H.html";
+        } else {
+          alert("Telefone ou senha incorretos!");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>H Invest</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="logo">
+    <img src="1006.png" style="width: 100%; max-width: 400px; height: auto;" />
+  </div>
+
+  <section class="usuario-info">
+    <p id="usuario-nome">Nome do Usuário: Carregando...</p>
+    <p id="usuario-telefone">Telefone: Carregando...</p>
+  </section>
+
+  <section class="acoes">
+    <a href="recarga.html" class="botao"><img src="10003.png" alt=""> Recarga</a>
+    <a href="saque.html" class="botao"><img src="10004.png" alt=""> Retirada</a>
+    <button class="botao" id="checkin-diario"><img src="10005.png" alt=""> Check-in Diário</button>
+    <a href="download.html" class="botao"><img src="10011.png" alt=""> Baixar App</a>
+    <a href="ajuda.html" class="botao"><img src="10011.png" alt=""> Ajuda</a>
+  </section>
+
+  <div class="notificacao">
+    <span class="icone-sino">🔔</span>
+    <marquee behavior="scroll" direction="left">
+      Recarga R$160 com sucesso telefone (75)998**2201  Saque R$300 chave 🔑 Juao***@gmail.com andamento da 08.00 até às  21.00 horas nova investimentos de R$600.00 
+    </marquee>
+  </div>
+
+  <section class="carteira">
+    <h2>Minha carteira</h2>
+    <div class="saldos">
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="saldo-conta">R$ 0.00</p>
+        <span>Saldo da conta</span>
+      </div>
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="renda-acumulada">R$ 0.00</p>
+        <span>Renda acumulada</span>
+      </div>
+      <div class="saldo">
+        <img src="10004.png" alt="">
+        <p id="valor-recebimento">R$ 0.00</p>
+        <span>Valor de recebimento</span>
+      </div>
+    </div>
+  </section>
+
+  <button id="btn-recarga" onclick="enviarRecarga()">Aplicar Recarga</button>
+
+  <!-- Menu inferior -->
+  <nav class="menu-inferior">
+    <a href="H.html" class="ativo"><img src="30001.png" alt=""> Início</a>
+    <a href="ganhos1.html"><img src="10016.png" alt=""> Ganhos 1</a>
+    <a href="ganhos2.html"><img src="10017.png" alt=""> Ganhos 2</a>
+    <a href="perfil.html"><img src="ft4_1.png" alt=""> Meu</a>
+  </nav>
+
+  <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+    };
+
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Função para atualizar os dados do usuário
+    document.addEventListener("DOMContentLoaded", async () => {
+      const userId = localStorage.getItem("telefoneLogado");
+
+      if (!userId) {
+        alert("Usuário não logado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const userRef = db.ref("usuarios/" + userId);
+
+      // Recupera os dados do Firebase
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+
+        // Garante saldo inicial de R$21 se não existir
+        if (data.saldoConta === undefined) {
+          userRef.update({ saldoConta: 10 });  // Inicializa com saldo de R$10
+        }
+
+        // Recupera os dados atuais
+        const nome = data.nome || "Não cadastrado";
+        const saldoConta = parseFloat(data.saldoConta ?? 10).toFixed(2);  // Use saldoConta para exibir
+        const renda = parseFloat(data.renda || 0).toFixed(2);
+        const recebimento = parseFloat(data.recebimento || 0).toFixed(2);
+        const ultimoCheckin = data.ultimoCheckin || "";
+
+        // Atualiza as informações na página
+        document.getElementById("usuario-nome").textContent = "Nome do Usuário: " + nome;
+        document.getElementById("usuario-telefone").textContent = "Telefone: " + userId;
+        document.getElementById("saldo-conta").textContent = "R$ " + saldoConta;
+        document.getElementById("renda-acumulada").textContent = "R$ " + renda;
+        document.getElementById("valor-recebimento").textContent = "R$ " + recebimento;
+
+        // Verifica se o usuário já fez o check-in hoje
+        const hoje = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+
+        if (ultimoCheckin === hoje) {
+          document.getElementById("checkin-diario").disabled = true; // Desabilita o botão se já fez check-in
+        }
+      });
+    });
+
+    // Função para realizar o check-in diário
+    document.getElementById("checkin-diario").addEventListener("click", function() {
+      const userId = localStorage.getItem("telefoneLogado");
+
+      if (!userId) {
+        alert("Usuário não logado.");
+        return;
+      }
+
+      const userRef = db.ref("usuarios/" + userId);
+
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const saldoAtual = parseFloat(data.saldoConta || 0);
+        const rendaAcumulada = parseFloat(data.renda || 0);
+
+        // Incrementa R$1.00 no saldo
+        const novoSaldo = saldoAtual + 1;
+        const novaRendaAcumulada = rendaAcumulada + 1;
+
+        const hoje = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+
+        userRef.update({
+          saldoConta: novoSaldo,
+          renda: novaRendaAcumulada,
+          ultimoCheckin: hoje  // Registra o dia do último check-in
+        }).then(() => {
+          document.getElementById("saldo-conta").textContent = "R$ " + novoSaldo.toFixed(2);
+          document.getElementById("renda-acumulada").textContent = "R$ " + novaRendaAcumulada.toFixed(2);
+          alert("Check-in diário realizado com sucesso! +R$1.00");
+
+          // Desabilita o botão de check-in até o próximo dia
+          document.getElementById("checkin-diario").disabled = true;
+        });
+      });
+    });
+
+    // Função para aplicar a recarga na carteira
+    function aplicarRecarga(valorRecarga) {
+      const userId = localStorage.getItem("telefoneLogado");
+
+      if (!userId) {
+        alert("Usuário não logado.");
+        return;
+      }
+
+      const userRef = db.ref("usuarios/" + userId);
+
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const saldoAtual = parseFloat(data.saldoConta || 0);
+
+        const novoSaldo = saldoAtual + valorRecarga;  // Atualiza o saldo
+
+        userRef.update({
+          saldoConta: novoSaldo
+        }).then(() => {
+          document.getElementById("saldo-conta").textContent = "R$ " + novoSaldo.toFixed(2);
+          alert("Recarga de R$" + valorRecarga + " realizada com sucesso!");
+        });
+      });
+    }
+  </script>
+</body>
+</html>

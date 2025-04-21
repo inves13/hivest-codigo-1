@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background: #111; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+        h2 { color: #ffcc00; margin-bottom: 15px; }
+        .formulario { display: flex; flex-direction: column; gap: 10px; }
+        .formulario input { padding: 12px; border: 1px solid #333; border-radius: 8px; font-size: 16px; background: #222; color: #fff; outline: none; }
+        .botao { background: #003366; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        .botao:hover { background: #0055aa; }
+        .trocar { margin-top: 10px; color: #ffcc00; cursor: pointer; text-decoration: underline; }
+        .trocar:hover { color: #fff; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Tela de Recuperação de Senha -->
+        <div id="tela-recuperacao">
+            <h2>Recuperar Senha</h2>
+            <form class="formulario">
+                <input type="tel" id="recuperar-telefone" placeholder="Digite seu telefone" required pattern="[0-9]{10,11}">
+                <button type="button" class="botao" onclick="enviarCodigo()">Enviar Código</button>
+            </form>
+            <p class="trocar" onclick="mostrarLogin()">Já tem conta? Faça login</p>
+        </div>
+
+        <!-- Tela de Criar Nova Senha -->
+        <div id="tela-nova-senha" class="hidden">
+            <h2>Criar Nova Senha</h2>
+            <form class="formulario">
+                <input type="text" id="codigo-recuperacao" placeholder="Digite o código recebido" required>
+                <input type="password" id="nova-senha" placeholder="Digite sua nova senha" required>
+                <input type="password" id="confirmar-nova-senha" placeholder="Confirme sua nova senha" required>
+                <button type="button" class="botao" onclick="confirmarNovaSenha()">Confirmar Nova Senha</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let codigoEnviado = ""; // Variável global para armazenar o código gerado
+
+        // Função para enviar o código de recuperação via SMS (simulado)
+        function enviarCodigo() {
+            let telefoneRecuperacao = document.getElementById("recuperar-telefone").value.trim();
+            telefoneRecuperacao = telefoneRecuperacao.replace(/\D/g, ""); // Remove qualquer caractere não numérico
+
+            if (telefoneRecuperacao.length < 10 || telefoneRecuperacao.length > 11) {
+                alert("Por favor, insira um número de telefone válido!");
+                return;
+            }
+
+            // Gerar um código único para recuperação (simulação de envio)
+            codigoEnviado = gerarCodigoUnico();
+            alert("O código foi enviado para o número " + telefoneRecuperacao + ". Verifique seu SMS!");
+
+            // Exibir a tela para inserir a nova senha
+            document.getElementById("tela-recuperacao").classList.add("hidden");
+            document.getElementById("tela-nova-senha").classList.remove("hidden");
+        }
+
+        // Função para gerar um código aleatório
+        function gerarCodigoUnico() {
+            const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let codigo = "";
+            for (let i = 0; i < 6; i++) {
+                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            return codigo;
+        }
+
+        // Função para confirmar a nova senha
+        function confirmarNovaSenha() {
+            let codigoInserido = document.getElementById("codigo-recuperacao").value.trim();
+            let novaSenha = document.getElementById("nova-senha").value;
+            let confirmarNovaSenha = document.getElementById("confirmar-nova-senha").value;
+
+            if (codigoInserido !== codigoEnviado) {
+                alert("Código inválido! Tente novamente.");
+                return;
+            }
+
+            if (novaSenha === "" || confirmarNovaSenha === "") {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            if (novaSenha !== confirmarNovaSenha) {
+                alert("As senhas não coincidem!");
+                return;
+            }
+
+            // Salvar a nova senha no localStorage (ou banco de dados, se necessário)
+            let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+            let telefoneRecuperacao = document.getElementById("recuperar-telefone").value.trim();
+
+            let usuario = usuarios.find(user => user.telefone === telefoneRecuperacao);
+            if (usuario) {
+                usuario.senha = novaSenha;
+                localStorage.setItem("usuarios", JSON.stringify(usuarios));
+                alert("Senha alterada com sucesso!");
+                window.location.href = "login.html"; // Redireciona para a página de login
+            } else {
+                alert("Telefone não encontrado. Tente novamente.");
+            }
+        }
+
+        function mostrarLogin() {
+            window.location.href = "login.html"; // Redireciona para a página de login
+        }
+    </script>
+
+</body>
+</html>

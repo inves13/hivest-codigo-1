@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f5f7;
+      padding: 30px;
+      color: #333;
+    }
+    h2, h3 {
+      color: #007bff;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .danger {
+      background-color: #dc3545;
+    }
+    .danger:hover {
+      background-color: #b02a37;
+    }
+    .success {
+      background-color: #28a745;
+    }
+    .success:hover {
+      background-color: #1e7e34;
+    }
+    .gray {
+      background-color: #6c757d;
+    }
+    .gray:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Painel Administrativo</h2>
+
+<h3>Adicionar Saldo ao Usuário</h3>
+<input type="text" id="telefone" placeholder="Telefone do usuário">
+<input type="number" id="valor" placeholder="Valor a adicionar">
+<button class="success" onclick="adicionarSaldo()">Adicionar Saldo</button>
+
+<hr>
+
+<h3>Usuários</h3>
+<div id="usuariosContainer"></div>
+
+<h3>Recargas Pendentes</h3>
+<div id="recargasContainer"></div>
+
+<h3>Saques Pendentes</h3>
+<div id="saquesContainer"></div>
+
+<h3>Retiradas Realizadas</h3>
+<div id="retiradasContainer"></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+    authDomain: "hinvest-f4354.firebaseapp.com",
+    databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+    projectId: "hinvest-f4354",
+    storageBucket: "hinvest-f4354.appspot.com",
+    messagingSenderId: "646397677016",
+    appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function adicionarSaldo() {
+    const tel = document.getElementById("telefone").value;
+    const valor = parseFloat(document.getElementById("valor").value);
+    if (!tel || !valor) return alert("Preencha os dois campos corretamente!");
+    const refSaldo = db.ref("usuarios/" + tel + "/saldoConta");
+    refSaldo.get().then(snapshot => {
+      const saldoAtual = snapshot.exists() ? parseFloat(snapshot.val()) : 0;
+      refSaldo.set(saldoAtual + valor).then(() => alert("Saldo atualizado com sucesso!"));
+    });
+  }
+
+  function removerUsuario(telefone) {
+    if (confirm("Deseja realmente remover esse usuário?")) {
+      db.ref("usuarios/" + telefone).remove().then(() => alert("Usuário removido!"));
+    }
+  }
+
+  function bloquearUsuario(telefone) {
+    db.ref("usuarios/" + telefone).update({ bloqueado: true }).then(() => alert("Usuário bloqueado!"));
+  }
+
+  db.ref("usuarios").on("value", snapshot => {
+    const container = document.getElementById("usuariosContainer");
+    container.innerHTML = "";
+    snapshot.forEach(child => {
+      const user = child.val();
+      const telefone = child.key;
+      const nome = user.nome || "(Sem nome)";
+      const saldo = user.saldoConta || 0;
+      const bloqueado = user.bloqueado ? "SIM" : "NÃO";
+      const conta = user.contaBancaria;
+      const dadosPix = conta ? `
+        <b>Banco:</b><br>
+        Titular: ${conta.nomeTitular}<br>
+        Tipo: ${conta.tipoChave}<br>
+        Chave PIX: ${conta.chavePix}<br>` : "Sem dados bancários.";
+      container.innerHTML += `
+        <div class="card">
+          <b>Telefone:</b> ${telefone}<br>
+          <b>Nome:</b> ${nome}<br>
+          <b>Saldo na Conta:</b> R$${saldo.toFixed(2)}<br>
+          <b>Bloqueado:</b> ${bloqueado}<br><br>
+          ${dadosPix}<br>
+          <button class="danger" onclick="removerUsuario('${telefone}')">Remover</button>
+          <button class="gray" onclick="bloquearUsuario('${telefone}')">Bloquear</button>
+        </div>`;
+    });
+  });
+
+  db.ref("saques").on("value", snapshot => {
+    const container = document.getElementById("saquesContainer");
+    container.innerHTML = "";
+    snapshot.forEach(child => {
+      const saque = child.val();
+      if (saque.status === "pendente") {
+        container.innerHTML += `
+          <div class="card">
+            <b>Usuário:</b> ${saque.userId}<br>
+            <b>Valor:</b> R$${parseFloat(saque.valorSaque).toFixed(2)}<br>
+            <b>Chave PIX:</b> ${saque.chavePix}<br>
+            <b>Status:</b> ${saque.status}<br>
+            <b>Recebimento:</b> ${saque.recebimento || "-"}<br>
+            <button class="success" onclick="aprovarSaque('${child.key}')">Aprovar Saque</button>
+            <button class="danger" onclick="rejeitarSaque('${child.key}')">Rejeitar Saque</button>
+          </div>`;
+      }
+    });
+  });
+
+  function aprovarSaque(id) {
+    if (confirm("Confirmar aprovação do saque?")) {
+      db.ref("saques/" + id).update({ status: "aprovado" }).then(() => alert("Saque aprovado!"));
+    }
+  }
+
+  function rejeitarSaque(id) {
+    if (confirm("Confirmar rejeição do saque?")) {
+      db.ref("saques/" + id).update({ status: "rejeitado" }).then(() => alert("Saque rejeitado!"));
+    }
+  }
+
+  db.ref("recargas").on("value", snapshot => {
+    const container = document.getElementById("recargasContainer");
+    container.innerHTML = "";
+    snapshot.forEach(child => {
+      const recarga = child.val();
+      if (recarga.status === "pendente") {
+        container.innerHTML += `
+          <div class="card">
+            <b>Usuário:</b> ${recarga.userId}<br>
+            <b>Valor:</b> R$${parseFloat(recarga.valor).toFixed(2)}<br>
+            <b>Status:</b> ${recarga.status}<br>
+            <button class="success" onclick="aprovarRecarga('${child.key}', '${recarga.userId}', ${parseFloat(recarga.valor)})">Aprovar Recarga</button>
+          </div>`;
+      }
+    });
+  });
+
+  function aprovarRecarga(id, userId, valor) {
+    db.ref("recargas/" + id).update({ status: "aprovado" }).then(() => {
+      alert("Recarga aprovada!");
+      db.ref("usuarios/" + userId + "/saldoConta").get().then(snapshot => {
+        const saldoAtual = snapshot.val() || 0;
+        db.ref("usuarios/" + userId).update({
+          saldoConta: saldoAtual + valor
+        });
+      });
+    });
+  }
+
+  db.ref("usuarios").on("child_added", snapshot => {
+    const telefone = snapshot.key;
+    db.ref("usuarios/" + telefone + "/extratoRetirada").on("child_added", childSnapshot => {
+      const retirada = childSnapshot.val();
+      if (retirada.status === "Aprovado") {
+        const valorRetirado = parseFloat(retirada.valor).toFixed(2);
+        const recebimento = parseFloat(retirada.recebimento || 0).toFixed(2);
+        const dataRetirada = retirada.ultimoCheckin || "Data não disponível";
+        const container = document.getElementById("retiradasContainer");
+        container.innerHTML += `
+          <div class="card">
+            <b>Usuário:</b> ${telefone}<br>
+            <b>Valor Retirado:</b> R$${valorRetirado}<br>
+            <b>Valor Recebido:</b> R$${recebimento}<br>
+            <b>Data da Retirada:</b> ${dataRetirada}<br>
+          </div>`;
+      }
+    });
+  });
+</script>
+</body>
+</html>

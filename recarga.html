@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recarga - H Invest</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "seu-projeto.firebaseapp.com",
+      databaseURL: "https://seu-projeto.firebaseio.com",
+      projectId: "seu-projeto",
+      storageBucket: "seu-projeto.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    window.salvarRecarga = function(valor) {
+      const recargaRef = ref(database, 'recargas');
+      push(recargaRef, {
+        valor: valor,
+        data: new Date().toLocaleString(),
+        status: 'Pendente'
+      }).then(() => {
+        console.log('Recarga enviada!');
+      }).catch((err) => {
+        console.error('Erro:', err);
+      });
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      background-color: #2c3e50;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    h2 {
+      color: #f39c12;
+      text-align: center;
+    }
+
+    select, button, input {
+      background-color: #34495e;
+      color: #fff;
+      border: 1px solid #f39c12;
+      padding: 12px;
+      margin-top: 15px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #f39c12;
+      color: #2c3e50;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Escolha o valor da recarga</h2>
+    <select id="valorRecarga">
+      <option value="">Selecione o valor</option>
+      <option value="60">R$ 60</option>
+      <option value="160">R$ 160</option>
+      <option value="300">R$ 300</option>
+      <option value="450">R$ 450</option>
+      <option value="500">R$ 500</option>
+      <option value="650">R$ 650</option>
+      <option value="700">R$ 700</option>
+      <option value="850">R$ 850</option>
+      <option value="900">R$ 900</option>
+      <option value="1050">R$ 1050</option>
+    </select>
+
+    <button onclick="gerarPagamento()">Gerar Código Pix</button>
+
+    <div id="resultado">
+      <p><strong>Código Pix Copia e Cola:</strong></p>
+      <input type="text" id="linkPagamento" readonly>
+      <button onclick="copiarLink()">Copiar Código Pix</button>
+    </div>
+  </div>
+
+  <script>
+    const links = {
+      "60": "00020126...60",
+      "160": "00020126...160",
+      "300": "00020126...300",
+      "450": "00020126...450",
+      "500": "00020126...500",
+      "650": "00020126...650",
+      "700": "00020126...700",
+      "850": "00020126...850",
+      "900": "00020126...900",
+      "1050": "00020126...1050"
+    };
+
+    function gerarPagamento() {
+      const valor = document.getElementById("valorRecarga").value;
+      const linkPagamento = document.getElementById("linkPagamento");
+
+      if (valor && links[valor]) {
+        linkPagamento.value = links[valor];
+        document.getElementById("resultado").style.display = "block";
+        salvarRecarga(valor);
+      } else {
+        alert("Selecione um valor válido.");
+      }
+    }
+
+    function copiarLink() {
+      const linkPagamento = document.getElementById("linkPagamento");
+      linkPagamento.select();
+      document.execCommand("copy");
+      alert("Código Pix copiado!");
+    }
+  </script>
+</body>
+</html>

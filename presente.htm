@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resgatar Presente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #4500b5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Resgate seu presente</h2>
+        <button onclick="resgatarPresente()">Resgatar Presente</button>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        function resgatarPresente() {
+            let ultimoResgate = localStorage.getItem("ultimoResgate");
+            let agora = new Date().getTime();
+            
+            if (ultimoResgate && (agora - ultimoResgate < 2 * 60 * 60 * 1000)) {
+                document.getElementById("status").innerText = "Aguarde 2 horas para resgatar novamente!";
+                return;
+            }
+
+            // Salva o horário do resgate
+            localStorage.setItem("ultimoResgate", agora);
+            
+            // Atualiza o saldo no h.html (Simulação)
+            let saldoAtual = localStorage.getItem("saldo") ? parseFloat(localStorage.getItem("saldo")) : 0;
+            let novoSaldo = saldoAtual + 0.50;
+            localStorage.setItem("saldo", novoSaldo);
+
+            document.getElementById("status").innerText = "Presente resgatado! Aguarde 2 horas para novo resgate.";
+
+            // Após 2 horas, adiciona R$1,50
+            setTimeout(() => {
+                let saldoAtualizado = parseFloat(localStorage.getItem("saldo")) + 1.50;
+                localStorage.setItem("saldo", saldoAtualizado);
+                document.getElementById("status").innerText = "Seu saldo foi atualizado para R$ " + saldoAtualizado.toFixed(2);
+            }, 2 * 60 * 60 * 1000);
+        }
+    </script>
+
+</body>
+</html>

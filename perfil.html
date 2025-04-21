@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hivest - Plataforma</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "SENDER_ID_AQUI",
+      appId: "APP_ID_AQUI",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .perfil {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .perfil img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+    }
+    .perfil-info {
+      flex-grow: 1;
+      margin-left: 10px;
+    }
+    .logout {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .servicos {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      text-align: center;
+    }
+    .servicos div {
+      background-color: #333;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Perfil -->
+  <div class="perfil">
+    <img src="10017.png" alt="Logo Hivest">
+    <div class="perfil-info">
+      <h3>Hivest</h3>
+      <p id="telefone">Telefone: Não disponível</p>
+    </div>
+    <div class="logout" onclick="logout()">🔓</div>
+  </div>
+
+  <!-- Serviços -->
+  <h3>Meus serviços</h3>
+  <div class="servicos">
+    <div onclick="irPara('sobre.html')">ℹ️ <br> Sobre nós</div>
+    <div onclick="irPara('regras.html')">📜 <br> Regras</div>
+    <div onclick="irPara('registros_conta.html')">📄 <br> Registros</div>
+    <div onclick="irPara('ajuda.html')">🎧 <br> Ajuda</div>
+    <div onclick="irPara('download.html')">⬇️ <br> Download</div>
+    <div onclick="irPara('saque.html')">💳 <br> Conta PIX</div>
+    <div onclick="irPara('senha.html')">🔒 <br> Senha</div>
+    <div onclick="irPara('presente.htm')">🎁 <br> Resgatar presentes</div>
+  </div>
+</div>
+
+<script>
+  function irPara(pagina) {
+    window.location.href = pagina;
+  }
+
+  function logout() {
+    alert("Você foi deslogado!");
+    localStorage.removeItem("telefoneLogado");
+    window.location.reload();
+  }
+
+  function carregarUsuario() {
+    const telefone = localStorage.getItem("telefoneLogado");
+    if (telefone) {
+      document.getElementById("telefone").textContent = "Telefone: " + telefone;
+    } else {
+      alert("Nenhum telefone logado. Faça login novamente.");
+      window.location.href = "login.html";
+    }
+  }
+
+  window.onload = () => {
+    carregarUsuario();
+  };
+</script>
+
+</body>
+</html>

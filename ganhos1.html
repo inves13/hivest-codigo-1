@@ -1,0 +1,166 @@
+<!-- Salve este arquivo como planos.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planos de Investimento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: #111;
+      border: 1px solid #444;
+      border-radius: 8px;
+      margin: 15px auto;
+      padding: 15px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .buy-button, .meus-produtos-button {
+      background: #28a745;
+      color: white;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      width: 100%;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    #planos, #meus-produtos {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Comprar Planos</h1>
+  <h2>Saldo: R$ <span id="saldo">0.00</span></h2>
+
+  <button class="meus-produtos-button" onclick="mostrarMeusProdutos()">Meus Produtos</button>
+
+  <div id="planos"></div>
+  <div id="meus-produtos" style="display:none;"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userId = localStorage.getItem("telefoneLogado");
+    const userRef = db.ref("usuarios/" + userId);
+
+    const planos = [60, 160, 300, 450, 500, 650, 700, 850, 900, 1050];
+
+    function carregarPlanos(saldo) {
+      const container = document.getElementById("planos");
+      container.innerHTML = "";
+      document.getElementById("meus-produtos").style.display = "none";
+      container.style.display = "block";
+
+      planos.forEach(valor => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>Plano R$${valor}</h3>
+          <img src="imagens/PLANO_${valor}.png" alt="Imagem do plano ${valor}" style="width: 100%; height: auto; border-radius: 8px;">
+          <p>Retorno diário por 50 dias</p>
+          <p>Lucro total: R$${(valor * 0.05 * 50).toFixed(2)}</p>
+          <button class="buy-button" onclick="comprarPlano(${valor})">Comprar</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function atualizarSaldo() {
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const saldo = parseFloat(data.saldoConta || 0);
+        document.getElementById("saldo").textContent = saldo.toFixed(2);
+        carregarPlanos(saldo);
+      });
+    }
+
+    function comprarPlano(valor) {
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const saldoAtual = parseFloat(data.saldoConta || 0);
+
+        if (saldoAtual < valor) {
+          alert("Saldo insuficiente!");
+          return;
+        }
+
+        const novoSaldo = saldoAtual - valor;
+        const investimentos = data.investimentos || [];
+        const novoInvestimento = {
+          valor: valor,
+          data: new Date().toLocaleDateString(),
+          retornoDiario: (valor * 0.05).toFixed(2),
+          diasRestantes: 50,
+          imagem: `imagens/PLANO_${valor}.png` // Aqui armazenamos a imagem associada ao plano
+        };
+
+        investimentos.push(novoInvestimento);
+
+        userRef.update({
+          saldoConta: novoSaldo,
+          saldo: novoSaldo,
+          investimentos: investimentos
+        }).then(() => {
+          alert("Plano adquirido com sucesso!");
+          atualizarSaldo();
+        });
+      });
+    }
+
+    function mostrarMeusProdutos() {
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const investimentos = data.investimentos || [];
+
+        const container = document.getElementById("meus-produtos");
+        container.innerHTML = "<h2>Meus Produtos</h2>";
+        document.getElementById("planos").style.display = "none";
+        container.style.display = "block";
+
+        if (investimentos.length === 0) {
+          container.innerHTML += "<p>Você ainda não comprou nenhum plano.</p>";
+        } else {
+          investimentos.forEach((inv, index) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <h3>Plano R$${inv.valor}</h3>
+              <img src="${inv.imagem}" alt="Imagem do plano ${inv.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+              <p>Data da compra: ${inv.data}</p>
+              <p>Retorno diário: R$${inv.retornoDiario}</p>
+              <p>Dias restantes: ${inv.diasRestantes}</p>
+            `;
+            container.appendChild(card);
+          });
+        }
+      });
+    }
+
+    atualizarSaldo();
+  </script>
+</body>
+</html>
