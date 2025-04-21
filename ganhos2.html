@@ -159,15 +159,15 @@
       });
     }
 
-    // CÓDIGO DE CONVITE FIXO DO USUÁRIO PRINCIPAL
+    // Código de convite fixo
     const meuCodigo = "1";
     const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
 
-    // Exibir código e link
+    // Exibe o código e link
     document.getElementById("invite-code").textContent = meuCodigo;
     document.getElementById("invite-link").textContent = meuLink;
 
-    // Carregar convidados (afiliados)
+    // Carrega usuários indicados
     database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
       let totalBonus = 0;
       let totalUsers = 0;
