@@ -55,7 +55,7 @@
       <input type="text" id="cadastro-nome" placeholder="Nome completo" required />
       <input type="text" id="cadastro-telefone" placeholder="Telefone" required />
       <input type="password" id="cadastro-senha" placeholder="Senha" required />
-      <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
+      <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" readonly />
       <button type="submit">Cadastrar</button>
     </form>
 
@@ -96,7 +96,7 @@
           // Buscar quantidade atual de usuários para gerar o número sequencial
           db.ref("usuarios").once("value").then(snapshot => {
             const total = snapshot.numChildren() + 1;
-            const meuLink = "https://inves13.github.io/hivest-codigo-" + total;
+            const meuCodigo = total; // O código será gerado a partir do número de usuários
 
             db.ref("usuarios/" + telefone).set({
               nome: nome,
@@ -106,9 +106,12 @@
               recebimento: 0,
               ultimoCheckin: "",
               codigoIndicacao: codigoIndicacao,
-              meuLink: meuLink,
+              codigo: meuCodigo, // Salva o código gerado para cada usuário
               timestamp: Date.now()
             }).then(() => {
+              // Ao criar a conta, mostra o código no campo "Código de Indicação"
+              document.getElementById("cadastro-codigo").value = meuCodigo;
+
               localStorage.setItem("telefoneLogado", telefone);
               window.location.href = "H.html";
             }).catch((error) => {
