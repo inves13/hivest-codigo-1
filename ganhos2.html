@@ -1,70 +1,143 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meus Convites</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Equipe - Ganhos</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      padding: 20px;
-      color: #333;
-    }
-    h2 {
-      color: green;
-    }
-    .box {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px #ccc;
-    }
-    .copy-btn {
-      margin-top: 5px;
-      background: green;
+      background-color: #121212;
       color: white;
-      padding: 5px 10px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .profile span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .details-btn {
+      background-color: #8A2BE2;
+      color: white;
+      padding: 10px 15px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
-    ul {
-      padding: 0;
-      list-style: none;
+
+    .team-section, .invite-section {
+      width: 100%;
+      margin-bottom: 20px;
     }
-    li {
-      background: #eaeaea;
-      margin: 5px 0;
-      padding: 10px;
+
+    .team-level, .invite-code, .invite-link {
+      background-color: #1e1e1e;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .copy-btn {
+      background-color: #8A2BE2;
+      color: white;
+      padding: 8px;
+      border: none;
       border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .bonus-info {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .invited-list {
+      background-color: #1e1e1e;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      width: 100%;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-  <h2>Meu Código de Indicação</h2>
-  <div class="box">
-    <div><strong>Código:</strong> <span id="invite-code">...</span></div>
-    <button class="copy-btn" onclick="copyText('invite-code')">Copiar Código</button>
-  </div>
+  <div class="container">
+    <div class="header">
+      <div class="profile">
+        <span>Minha equipe</span>
+      </div>
+      <button class="details-btn" onclick="window.location.href='equipe.html'">Detalhes da equipe</button>
+    </div>
 
-  <div class="box">
-    <div><strong>Link para convidar:</strong></div>
-    <div id="invite-link">...</div>
-    <button class="copy-btn" onclick="copyText('invite-link')">Copiar Link</button>
-  </div>
+    <section class="team-section">
+      <div class="team-level">
+        <div class="level">LV1</div>
+        <div class="tax">35% Taxa de comissão</div>
+        <div class="bonus" id="lv1-bonus">R$ 0,00 Bônus</div>
+        <div class="status">Usuário válido</div>
+      </div>
+    </section>
 
-  <div class="box">
-    <h3>Usuários Convidados</h3>
-    <div id="total-users"></div>
-    <ul id="invited-users"></ul>
-    <div id="total-bonus" style="margin-top:10px;"></div>
+    <section class="invite-section">
+      <div class="invite-code">
+        <span>Código de convite</span>
+        <p id="invite-code">Carregando...</p>
+        <button class="copy-btn" onclick="copyText('invite-code')">Cópia</button>
+      </div>
+
+      <div class="invite-link">
+        <span>Link de convite</span>
+        <p id="invite-link">Carregando...</p>
+        <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
+      </div>
+
+      <div class="invited-list">
+        <strong>Usuários convidados:</strong>
+        <ul id="invited-users" style="padding-left: 20px;"></ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span id="total-users">0 usuários convidados</span>
+      <span id="total-bonus">R$ 0,00 ganhos totais</span>
+      <div class="bonus-info">
+        <p>Bônus de convite: Quando um amigo se registra e investe, você recebe 35% do valor investido.</p>
+      </div>
+    </footer>
   </div>
 
   <script>
+    // Configuração Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -78,44 +151,44 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    const telefoneLogado = localStorage.getItem("telefoneLogado");
-    if (!telefoneLogado) {
-      alert("Você precisa estar logado.");
-      window.location.href = "index.html";
-    }
-
+    // Função para copiar texto
     function copyText(id) {
       const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copiado!");
+      });
     }
 
-    database.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
-      const usuario = snapshot.val();
-      const codigo = usuario.codigoGerado;
+    // CÓDIGO DE CONVITE FIXO DO USUÁRIO PRINCIPAL
+    const meuCodigo = "1";
+    const meuLink = `https://hinvest.site/?codigo=${meuCodigo}`;
 
-      document.getElementById("invite-code").textContent = codigo;
-      document.getElementById("invite-link").textContent = window.location.origin + "/index.html?codigo=" + codigo;
+    // Exibir código e link
+    document.getElementById("invite-code").textContent = meuCodigo;
+    document.getElementById("invite-link").textContent = meuLink;
 
-      const convidadosRef = database.ref("usuarios/" + telefoneLogado + "/indicados");
-      convidadosRef.once("value").then(snap => {
-        let totalUsuarios = 0;
-        let totalBonus = 0;
-        const lista = document.getElementById("invited-users");
-        lista.innerHTML = "";
+    // Carregar convidados (afiliados)
+    database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
+      let totalBonus = 0;
+      let totalUsers = 0;
+      const list = document.getElementById("invited-users");
+      list.innerHTML = "";
 
-        snap.forEach(child => {
-          const indicado = child.val();
-          totalUsuarios++;
-          totalBonus += indicado.bonusGerado || 0;
+      snapshot.forEach(child => {
+        const nome = child.val().nome;
+        const investimento = parseFloat(child.val().investimento || 0);
+        const bonus = investimento * 0.35;
+        totalBonus += bonus;
+        totalUsers++;
 
-          const li = document.createElement("li");
-          li.textContent = `${indicado.nome} - ${indicado.telefone} - R$ ${indicado.bonusGerado.toFixed(2)}`;
-          lista.appendChild(li);
-        });
-
-        document.getElementById("total-users").textContent = `${totalUsuarios} usuários convidados`;
-        document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
+        const li = document.createElement("li");
+        li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+        list.appendChild(li);
       });
+
+      document.getElementById("lv1-bonus").textContent = `R$ ${totalBonus.toFixed(2)} Bônus`;
+      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
+      document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
     });
   </script>
 </body>
