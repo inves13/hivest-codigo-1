@@ -88,6 +88,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
+    // Configuração do Firebase (substitua pelos seus dados reais)
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
       authDomain: "SEU_AUTH_DOMAIN",
@@ -98,12 +99,15 @@
       appId: "SEU_APP_ID"
     };
 
+    // Inicialização do Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Recupera telefone do usuário logado
     const telefoneUsuario = localStorage.getItem('telefone');
 
-    const contador = [0, 0, 0]; // LV1, LV2, LV3
+    // Contadores por nível
+    const contador = [0, 0, 0];
     const extractList = document.getElementById('extractList');
 
     function formatarData(timestamp) {
@@ -135,21 +139,19 @@
           contador[nivel - 1]++;
           adicionarItem(nome, dataCadastro, nivel);
 
-          buscarIndicados(child.key, nivel + 1);
+          buscarIndicados(child.key, nivel + 1); // Recursão para níveis subsequentes
         });
 
+        // Atualiza contadores na tela
         document.getElementById('lv1').textContent = contador[0];
         document.getElementById('lv2').textContent = contador[1];
         document.getElementById('lv3').textContent = contador[2];
       });
     }
 
+    // Inicia busca apenas se telefone estiver salvo
     if (telefoneUsuario) {
-      // Só executa a função de buscar se o usuário estiver logado
       buscarIndicados(telefoneUsuario, 1);
-    } else {
-      // O código não exibe nada nem faz qualquer notificação
-      // Simplesmente não executa a busca se o usuário não estiver logado
     }
   </script>
 </body>
