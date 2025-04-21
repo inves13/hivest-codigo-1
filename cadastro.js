@@ -11,8 +11,9 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
   let nome = document.getElementById("nome").value;
   let telefone = document.getElementById("telefone").value;
   let senha = document.getElementById("senha").value;
-  let confirmarSenha = document.getElementById("confirmarSenha").value; // Adicionando o campo de confirmação de senha
-  
+  let confirmarSenha = document.getElementById("confirmarSenha").value;
+  let codigoIndicacao = document.getElementById("codigoIndicacao").value || null; // Aqui pega o código de indicação
+
   // Verificação dos campos obrigatórios
   if (nome === "" || telefone === "" || senha === "" || confirmarSenha === "") {
     alert("Preencha todos os campos!");
@@ -36,7 +37,9 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
         nome: nome,
         telefone: telefone,
         senha: senha,
-        saldo: 0
+        saldo: 0,
+        codigoIndicacao: codigoIndicacao, // Salva o código de indicação
+        codigoGerado: Math.floor(Math.random() * 10000), // Gerar código único para o usuário
       }).then(() => {
         alert("Cadastro realizado com sucesso!");
         window.location.href = "login.html"; // Redireciona para a página de login
