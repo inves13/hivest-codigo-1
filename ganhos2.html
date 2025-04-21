@@ -130,7 +130,7 @@
   </div>
 
   <script>
-    // Firebase
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -151,8 +151,9 @@
     }
 
     function getCodigoIndicado() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('codigo') || null;
+      const path = window.location.pathname;
+      const match = path.match(/hivest-codigo-(\d+)/);
+      return match ? match[1] : null;
     }
 
     async function gerarCodigoNovo() {
@@ -163,7 +164,7 @@
     async function iniciarSistema() {
       let usuarioId = localStorage.getItem("usuarioId");
       let meuCodigo;
-      let codigoIndicado = getCodigoIndicado();
+      let codigoIndicado = getCodigoIndicado(); // agora pega direto do link
 
       if (usuarioId) {
         const snapshot = await db.ref("usuarios/" + usuarioId).once("value");
