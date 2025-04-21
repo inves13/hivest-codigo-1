@@ -21,13 +21,18 @@
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       margin-bottom: 20px;
     }
     .profile span {
       font-size: 18px;
       font-weight: bold;
+    }
+    #indicador-info {
+      font-size: 14px;
+      color: #bbb;
+      margin-top: 4px;
     }
     .details-btn {
       background-color: #8A2BE2;
@@ -84,6 +89,7 @@
     <div class="header">
       <div class="profile">
         <span>Minha equipe</span>
+        <div id="indicador-info"></div>
       </div>
       <button class="details-btn" onclick="window.location.href='equipe.html'">Detalhes da equipe</button>
     </div>
@@ -126,7 +132,6 @@
   </div>
 
   <script>
-    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -156,6 +161,18 @@
       return snapshot.numChildren() + 1;
     }
 
+    async function exibirIndicador(codigoIndicado) {
+      if (codigoIndicado) {
+        const snapshot = await db.ref("usuarios").orderByChild("codigo").equalTo(Number(codigoIndicado)).once("value");
+        if (snapshot.exists()) {
+          const dados = Object.values(snapshot.val())[0];
+          const nome = dados.nome || "Desconhecido";
+          document.getElementById("indicador-info").textContent =
+            `Você foi indicado por: ${nome} (Código: ${codigoIndicado})`;
+        }
+      }
+    }
+
     async function iniciarSistema() {
       let usuarioId = localStorage.getItem("usuarioId");
       let meuCodigo;
@@ -183,6 +200,8 @@
         };
         await db.ref("usuarios/" + usuarioId).set(novoUsuario);
       }
+
+      await exibirIndicador(codigoIndicado);
 
       const linkConvite = `https://inves13.github.io/hivest-codigo-1?codigo=${meuCodigo}`;
       document.getElementById("invite-code").textContent = meuCodigo;
