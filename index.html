@@ -41,6 +41,13 @@
     h2, h3 {
       text-align: center;
     }
+    #codigo-gerado {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ff99;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -58,6 +65,7 @@
       <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" readonly />
       <button type="submit">Cadastrar</button>
     </form>
+    <div id="codigo-gerado"></div>
 
     <h3>Entrar</h3>
     <form id="login-form">
@@ -85,7 +93,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const codigoIndicado = urlParams.get("codigo");
 
-    // Se o código estiver na URL, preenche o campo de indicação automaticamente
     if (codigoIndicado) {
       document.getElementById("cadastro-codigo").value = codigoIndicado;
     }
@@ -102,10 +109,9 @@
         if (snapshot.exists()) {
           alert("Já existe uma conta cadastrada com esse número de telefone.");
         } else {
-          // Buscar quantidade atual de usuários para gerar o número sequencial
           db.ref("usuarios").once("value").then(snapshot => {
             const total = snapshot.numChildren() + 1;
-            const meuCodigo = total; // O código será gerado a partir do número de usuários
+            const meuCodigo = total;
 
             db.ref("usuarios/" + telefone).set({
               nome: nome,
@@ -115,14 +121,17 @@
               recebimento: 0,
               ultimoCheckin: "",
               codigoIndicacao: codigoIndicacao,
-              codigo: meuCodigo, // Salva o código gerado para cada usuário
+              codigo: meuCodigo,
               timestamp: Date.now()
             }).then(() => {
-              // Ao criar a conta, mostra o código no campo "Código de Indicação"
-              document.getElementById("cadastro-codigo").value = meuCodigo;
+              document.getElementById("codigo-gerado").innerText = 
+                "Seu código de indicação: " + meuCodigo + 
+                "\nCompartilhe este link: https://inves13.github.io/hivest-codigo-1?codigo=" + meuCodigo;
 
               localStorage.setItem("telefoneLogado", telefone);
-              window.location.href = "H.html";
+              setTimeout(() => {
+                window.location.href = "H.html";
+              }, 4000); // redireciona após 4 segundos
             }).catch((error) => {
               alert("Erro ao cadastrar: " + error.message);
             });
