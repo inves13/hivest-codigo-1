@@ -1,4 +1,3 @@
-<!-- Salve este arquivo como planos.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -35,6 +34,10 @@
     #planos, #meus-produtos {
       margin-top: 20px;
     }
+    .comprado {
+      color: green;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +70,18 @@
     const userId = localStorage.getItem("telefoneLogado");
     const userRef = db.ref("usuarios/" + userId);
 
-    const planos = [60, 160, 300, 450, 500, 650, 700, 850, 900, 1050];
+    const planos = [
+      { nome: "Plano Bronze", valor: 60, retornoDiario: 60 * 0.05 },
+      { nome: "Plano Prata", valor: 160, retornoDiario: 160 * 0.05 },
+      { nome: "Plano Ouro", valor: 300, retornoDiario: 300 * 0.05 },
+      { nome: "Plano Platina", valor: 450, retornoDiario: 450 * 0.05 },
+      { nome: "Plano Diamante", valor: 500, retornoDiario: 500 * 0.05 },
+      { nome: "Plano Master", valor: 650, retornoDiario: 650 * 0.05 },
+      { nome: "Plano VIP", valor: 700, retornoDiario: 700 * 0.05 },
+      { nome: "Plano Supremo", valor: 850, retornoDiario: 850 * 0.05 },
+      { nome: "Plano Elite", valor: 900, retornoDiario: 900 * 0.05 },
+      { nome: "Plano Imperador", valor: 1050, retornoDiario: 1050 * 0.05 }
+    ];
 
     function carregarPlanos(saldo) {
       const container = document.getElementById("planos");
@@ -75,15 +89,15 @@
       document.getElementById("meus-produtos").style.display = "none";
       container.style.display = "block";
 
-      planos.forEach(valor => {
+      planos.forEach(plano => {
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <h3>Plano R$${valor}</h3>
-          <img src="imagens/PLANO_${valor}.png" alt="Imagem do plano ${valor}" style="width: 100%; height: auto; border-radius: 8px;">
-          <p>Retorno diário por 50 dias</p>
-          <p>Lucro total: R$${(valor * 0.05 * 50).toFixed(2)}</p>
-          <button class="buy-button" onclick="comprarPlano(${valor})">Comprar</button>
+          <h3>${plano.nome} - R$${plano.valor}</h3>
+          <img src="1004.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+          <p>Retorno diário: R$${plano.retornoDiario.toFixed(2)}</p>
+          <p>Lucro total: R$${(plano.valor * 0.05 * 50).toFixed(2)}</p>
+          <button class="buy-button" onclick="comprarPlano('${plano.nome}', ${plano.valor}, ${plano.retornoDiario})">Comprar</button>
         `;
         container.appendChild(card);
       });
@@ -98,7 +112,7 @@
       });
     }
 
-    function comprarPlano(valor) {
+    function comprarPlano(nome, valor, retornoDiario) {
       userRef.once("value").then(snapshot => {
         const data = snapshot.val() || {};
         const saldoAtual = parseFloat(data.saldoConta || 0);
@@ -111,11 +125,13 @@
         const novoSaldo = saldoAtual - valor;
         const investimentos = data.investimentos || [];
         const novoInvestimento = {
+          nome: nome,
           valor: valor,
           data: new Date().toLocaleDateString(),
-          retornoDiario: (valor * 0.05).toFixed(2),
+          retornoDiario: retornoDiario.toFixed(2),
           diasRestantes: 50,
-          imagem: `imagens/PLANO_${valor}.png` // Aqui armazenamos a imagem associada ao plano
+          imagem: `imagens/PLANO_${valor}.png`,
+          status: "comprado"  // Novo campo para indicar que o plano foi comprado
         };
 
         investimentos.push(novoInvestimento);
@@ -148,11 +164,12 @@
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
-              <h3>Plano R$${inv.valor}</h3>
-              <img src="${inv.imagem}" alt="Imagem do plano ${inv.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+              <h3>${inv.nome} - R$${inv.valor}</h3>
+              <img src="1004.png" style="width: 100%; height: auto; border-radius: 8px;">
               <p>Data da compra: ${inv.data}</p>
               <p>Retorno diário: R$${inv.retornoDiario}</p>
               <p>Dias restantes: ${inv.diasRestantes}</p>
+              ${inv.status === "comprado" ? '<p class="comprado">Plano comprado!</p>' : ''}
             `;
             container.appendChild(card);
           });
