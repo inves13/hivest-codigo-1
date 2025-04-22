@@ -1,108 +1,121 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Minha Equipe</title>
   <style>
     body {
-      background-color: #111;
-      color: #fff;
       font-family: Arial, sans-serif;
       padding: 20px;
+      background: #f4f4f4;
     }
     h2 {
       text-align: center;
-      margin-bottom: 20px;
+      color: #222;
     }
-    #usuario-info {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .membro {
-      background-color: #1e1e1e;
+    .resumo {
+      background: #fff;
       padding: 15px;
       border-radius: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 5px #000;
+      margin-bottom: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    .sem-equipe {
-      text-align: center;
-      font-style: italic;
-      color: #ccc;
+    .resumo p {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
 
   <h2>Minha Equipe</h2>
-  <div id="usuario-info">Carregando dados...</div>
-  <div id="lista-equipe"></div>
+  <div class="resumo">
+    <p><strong>Total de membros:</strong> <span id="totalEquipe">0</span></p>
+    <p><strong>Total de comissão:</strong> R$ <span id="totalComissao">0.00</span></p>
+  </div>
+
+  <ul id="listaEquipe" style="padding: 0; list-style: none;"></ul>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
-      authDomain: "hinvest-f4354.firebaseapp.com",
-      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
-      projectId: "hinvest-f4354",
-      storageBucket: "hinvest-f4354.appspot.com",
-      messagingSenderId: "646397677016",
-      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      databaseURL: "https://SEU_PROJETO.firebaseio.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SEU_APP_ID"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  </script>
 
-    const telefone = localStorage.getItem("telefoneLogado");
-    const usuarioInfo = document.getElementById("usuario-info");
-    const listaEquipe = document.getElementById("lista-equipe");
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("Faça login para ver sua equipe.");
+        window.location.href = "index.html";
+        return;
+      }
 
-    if (!telefone) {
-      usuarioInfo.innerText = "Você precisa estar logado para ver sua equipe.";
-    } else {
-      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
-        const usuario = snapshot.val();
-        if (!usuario) {
-          usuarioInfo.innerText = "Usuário não encontrado.";
+      const uid = user.uid;  // Pega o UID do usuário logado
+      const db = firebase.database();
+
+      // Verifica se o usuário tem um código de indicação
+      db.ref("usuarios/" + uid + "/codigoIndicacao").once("value").then(snap => {
+        const meuCodigo = snap.val();
+        if (!meuCodigo) {
+          alert("Código de indicação não encontrado.");
           return;
         }
 
-        const meuCodigo = usuario.codigo;
-        usuarioInfo.innerHTML = `
-          <strong>Nome:</strong> ${usuario.nome}<br>
-          <strong>Seu Código:</strong> ${meuCodigo}
-        `;
+        // Agora buscamos os membros que têm o código de indicação igual ao de meuCodigo
+        db.ref("usuarios").orderByChild("codigoIndicacao").equalTo(meuCodigo).once("value").then(snapshot => {
+          let totalMembros = 0;
+          let totalComissao = 0;
+          const lista = document.getElementById("listaEquipe");
+          lista.innerHTML = "";  // Limpa a lista
 
-        db.ref("usuarios").once("value").then(snapshot => {
-          let equipe = [];
           snapshot.forEach(child => {
-            const membro = child.val();
-            if (membro.codigoIndicacao == meuCodigo) {
-              equipe.push(membro);
-            }
+            const dados = child.val();
+            totalMembros++;
+            const comissao = parseFloat(dados.recebimento || 0);
+            totalComissao += comissao;
+
+            // Exibe as informações do membro
+            const li = document.createElement("li");
+            li.classList.add("card");
+            li.innerHTML = `
+              <strong>Nome:</strong> ${dados.nome || "Sem nome"}<br>
+              <strong>Telefone:</strong> ${dados.senha || "Sem telefone"}<br>
+              <strong>Saldo:</strong> R$ ${dados.saldo || 0.00}<br>
+              <strong>Comissão:</strong> R$ ${comissao.toFixed(2)}
+            `;
+            lista.appendChild(li);
           });
 
-          if (equipe.length === 0) {
-            listaEquipe.innerHTML = '<p class="sem-equipe">Nenhum membro na sua equipe ainda.</p>';
-          } else {
-            listaEquipe.innerHTML = '';
-            equipe.forEach(membro => {
-              const div = document.createElement("div");
-              div.className = "membro";
-              div.innerHTML = `
-                <strong>Nome:</strong> ${membro.nome}<br>
-                <strong>Telefone:</strong> ${membro.telefone || "Não informado"}
-              `;
-              listaEquipe.appendChild(div);
-            });
-          }
+          // Exibe o total de membros e comissão
+          document.getElementById("totalEquipe").textContent = totalMembros;
+          document.getElementById("totalComissao").textContent = totalComissao.toFixed(2);
+        }).catch(error => {
+          alert("Erro ao recuperar os dados: " + error.message);
         });
+      }).catch(error => {
+        alert("Erro ao acessar os dados do usuário: " + error.message);
       });
-    }
+    });
   </script>
 
 </body>
