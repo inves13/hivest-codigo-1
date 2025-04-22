@@ -50,7 +50,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    // Configuração do Firebase — substitua pelos seus dados
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
       authDomain: "SEU_PROJETO.firebaseapp.com",
@@ -64,60 +63,65 @@
   </script>
 
   <script>
-    // Verifica se o usuário está logado antes de carregar os dados
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        const uid = user.uid;
-        const db = firebase.database();
+    // Mantém a sessão ativa no navegador
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+      // Verifica o login
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const uid = user.uid;
+          const db = firebase.database();
 
-        // Busca o código de indicação do usuário logado
-        db.ref("usuarios/" + uid + "/codigoIndicacao").once("value").then(snap => {
-          const meuCodigo = snap.val();
-          if (!meuCodigo) {
-            alert("Código de indicação não encontrado.");
-            return;
-          }
+          // Busca o código de indicação do usuário logado
+          db.ref("usuarios/" + uid + "/codigoIndicacao").once("value").then(snap => {
+            const meuCodigo = snap.val();
+            if (!meuCodigo) {
+              alert("Código de indicação não encontrado.");
+              return;
+            }
 
-          // Busca os membros que têm esse código de indicação
-          db.ref("usuarios").orderByChild("codigoIndicacao").equalTo(meuCodigo).once("value").then(snapshot => {
-            let totalMembros = 0;
-            let totalComissao = 0;
-            const lista = document.getElementById("listaEquipe");
-            lista.innerHTML = "";  // Limpa a lista
+            // Busca todos os usuários que indicaram usando esse código
+            db.ref("usuarios").orderByChild("codigoIndicacao").equalTo(meuCodigo).once("value").then(snapshot => {
+              let totalMembros = 0;
+              let totalComissao = 0;
+              const lista = document.getElementById("listaEquipe");
+              lista.innerHTML = "";
 
-            snapshot.forEach(child => {
-              const dados = child.val();
-              totalMembros++;
-              const comissao = parseFloat(dados.recebimento || 0);
-              totalComissao += comissao;
+              snapshot.forEach(child => {
+                const dados = child.val();
+                totalMembros++;
+                const comissao = parseFloat(dados.recebimento || 0);
+                totalComissao += comissao;
 
-              const li = document.createElement("li");
-              li.classList.add("card");
-              li.innerHTML = `
-                <strong>Nome:</strong> ${dados.nome || "Sem nome"}<br>
-                <strong>Telefone:</strong> ${dados.senha || "Sem telefone"}<br>
-                <strong>Saldo:</strong> R$ ${dados.saldo || 0.00}<br>
-                <strong>Comissão:</strong> R$ ${comissao.toFixed(2)}
-              `;
-              lista.appendChild(li);
+                const li = document.createElement("li");
+                li.classList.add("card");
+                li.innerHTML = `
+                  <strong>Nome:</strong> ${dados.nome || "Sem nome"}<br>
+                  <strong>Telefone:</strong> ${dados.senha || "Sem telefone"}<br>
+                  <strong>Saldo:</strong> R$ ${dados.saldo || 0.00}<br>
+                  <strong>Comissão:</strong> R$ ${comissao.toFixed(2)}
+                `;
+                lista.appendChild(li);
+              });
+
+              document.getElementById("totalEquipe").textContent = totalMembros;
+              document.getElementById("totalComissao").textContent = totalComissao.toFixed(2);
+            }).catch(error => {
+              alert("Erro ao recuperar dados da equipe: " + error.message);
             });
 
-            document.getElementById("totalEquipe").textContent = totalMembros;
-            document.getElementById("totalComissao").textContent = totalComissao.toFixed(2);
           }).catch(error => {
-            alert("Erro ao recuperar os dados: " + error.message);
+            alert("Erro ao buscar seu código de indicação: " + error.message);
           });
-        }).catch(error => {
-          alert("Erro ao acessar os dados do usuário: " + error.message);
-        });
 
-      } else {
-        // Só redireciona se realmente não estiver logado
-        setTimeout(() => {
-          alert("Faça login para ver sua equipe.");
+        } else {
+          // Se não estiver logado, manda para tela de login
           window.location.href = "index.html";
-        }, 200);
-      }
+        }
+      });
+    })
+    .catch(error => {
+      alert("Erro ao configurar sessão: " + error.message);
     });
   </script>
 
