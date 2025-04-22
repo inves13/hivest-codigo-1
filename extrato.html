@@ -68,11 +68,14 @@
           let statusColor = "orange";  // Inicialmente "Aguardando" (laranja)
           let statusText = "Aguardando";  // Status que vai ser exibido inicialmente
 
-          // Se o status no banco de dados for "Aprovado", manteremos "Aguardando" até o painel de aprovação
+          // Se o status no banco de dados for "Aprovado" ou "Rejeitado", atualiza o status
           if (item.status === "Aprovado") {
-            statusColor = "orange";  // Cor laranja para "Aguardando" antes de aprovação final
-            statusText = "Aguardando";  // Texto para "Aguardando"
-          } 
+            statusColor = "green";  // Cor verde para "Aprovado"
+            statusText = "Aprovado";  // Texto para "Aprovado"
+          } else if (item.status === "Rejeitado") {
+            statusColor = "red";  // Cor vermelha para "Rejeitado"
+            statusText = "Rejeitado";  // Texto para "Rejeitado"
+          }
 
           // Atualizando a linha da tabela
           tr.innerHTML = `
