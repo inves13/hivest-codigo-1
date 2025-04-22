@@ -1,65 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Minha Equipe</title>
   <style>
     body {
-      background-color: #000;
+      background-color: #111;
       color: #fff;
       font-family: Arial, sans-serif;
       padding: 20px;
-      margin: 0;
     }
-    h1 {
+    h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-    .user-card {
-      background-color: #1c1c1c;
+    #usuario-info {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .membro {
+      background-color: #1e1e1e;
       padding: 15px;
       border-radius: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 5px #000;
     }
-    .user-card p {
-      margin: 5px 0;
-    }
-    .total {
-      margin-top: 30px;
+    .sem-equipe {
       text-align: center;
-      font-size: 16px;
-    }
-    .voltar {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .voltar a {
-      color: #8A2BE2;
-      text-decoration: none;
-      font-weight: bold;
+      font-style: italic;
+      color: #ccc;
     }
   </style>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h1>Equipe Convidada</h1>
-  <div id="user-list"></div>
 
-  <div class="total">
-    <p><strong>Total de usuários convidados:</strong> <span id="total-users">0</span></p>
-    <p><strong>Total em bônus:</strong> R$ <span id="total-bonus">0.00</span></p>
-  </div>
-
-  <div class="voltar">
-    <a href="H.html">← Voltar</a>
-  </div>
+  <h2>Minha Equipe</h2>
+  <div id="usuario-info">Carregando dados...</div>
+  <div id="lista-equipe"></div>
 
   <script>
-    const meuCodigo = "1"; // código de convite
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -73,37 +57,53 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let totalBonus = 0;
-    let totalUsers = 0;
+    const telefone = localStorage.getItem("telefoneLogado");
+    const usuarioInfo = document.getElementById("usuario-info");
+    const listaEquipe = document.getElementById("lista-equipe");
 
-    db.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
-      const userList = document.getElementById("user-list");
-      userList.innerHTML = "";
+    if (!telefone) {
+      usuarioInfo.innerText = "Você precisa estar logado para ver sua equipe.";
+    } else {
+      db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+        const usuario = snapshot.val();
+        if (!usuario) {
+          usuarioInfo.innerText = "Usuário não encontrado.";
+          return;
+        }
 
-      snapshot.forEach(child => {
-        const data = child.val();
-        const nome = data.nome || "Sem nome";
-        const telefone = data.telefone || "Sem telefone";
-        const investimento = parseFloat(data.investimento || 0);
-        const bonus = investimento * 0.35;
-
-        totalUsers++;
-        totalBonus += bonus;
-
-        const div = document.createElement("div");
-        div.className = "user-card";
-        div.innerHTML = `
-          <p><strong>Nome:</strong> ${nome}</p>
-          <p><strong>Telefone:</strong> ${telefone}</p>
-          <p><strong>Investimento:</strong> R$ ${investimento.toFixed(2)}</p>
-          <p><strong>Seu bônus:</strong> R$ ${bonus.toFixed(2)}</p>
+        const meuCodigo = usuario.codigo;
+        usuarioInfo.innerHTML = `
+          <strong>Nome:</strong> ${usuario.nome}<br>
+          <strong>Seu Código:</strong> ${meuCodigo}
         `;
-        userList.appendChild(div);
-      });
 
-      document.getElementById("total-users").textContent = totalUsers;
-      document.getElementById("total-bonus").textContent = totalBonus.toFixed(2);
-    });
+        db.ref("usuarios").once("value").then(snapshot => {
+          let equipe = [];
+          snapshot.forEach(child => {
+            const membro = child.val();
+            if (membro.codigoIndicacao == meuCodigo) {
+              equipe.push(membro);
+            }
+          });
+
+          if (equipe.length === 0) {
+            listaEquipe.innerHTML = '<p class="sem-equipe">Nenhum membro na sua equipe ainda.</p>';
+          } else {
+            listaEquipe.innerHTML = '';
+            equipe.forEach(membro => {
+              const div = document.createElement("div");
+              div.className = "membro";
+              div.innerHTML = `
+                <strong>Nome:</strong> ${membro.nome}<br>
+                <strong>Telefone:</strong> ${membro.telefone || "Não informado"}
+              `;
+              listaEquipe.appendChild(div);
+            });
+          }
+        });
+      });
+    }
   </script>
+
 </body>
 </html>
