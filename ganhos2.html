@@ -20,32 +20,32 @@
     }
     .header {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       width: 100%;
       margin-bottom: 20px;
     }
     .profile span {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: bold;
-    }
-    .details-btn {
-      background-color: #8A2BE2;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
     }
     .team-section, .invite-section {
       width: 100%;
       margin-bottom: 20px;
     }
-    .team-level, .invite-code, .invite-link {
+    .invite-code, .invite-link {
       background-color: #1e1e1e;
       margin: 10px 0;
       padding: 15px;
       border-radius: 8px;
+    }
+    .invite-code span, .invite-link span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .tax, .bonus, .status {
+      margin: 5px 0;
+      font-size: 15px;
     }
     .copy-btn {
       background-color: #8A2BE2;
@@ -74,6 +74,9 @@
       margin-top: 10px;
       width: 100%;
     }
+    .invited-list ul {
+      padding-left: 20px;
+    }
   </style>
 
   <!-- Firebase SDK -->
@@ -86,17 +89,7 @@
       <div class="profile">
         <span>Minha equipe</span>
       </div>
-      <button class="details-btn" onclick="window.location.href='equipe.html'">Detalhes da equipe</button>
     </div>
-
-    <section class="team-section">
-      <div class="team-level">
-        <div class="level">LV1</div>
-        <div class="tax">35% Taxa de comissão</div>
-        <div class="bonus" id="lv1-bonus">R$ 0,00 Bônus</div>
-        <div class="status">Usuário válido</div>
-      </div>
-    </section>
 
     <section class="invite-section">
       <div class="invite-code">
@@ -110,24 +103,22 @@
         <p id="invite-link">Carregando...</p>
         <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
       </div>
-
+      
       <div class="invited-list">
         <strong>Usuários convidados:</strong>
-        <ul id="invited-users" style="padding-left: 20px;"></ul>
+        <ul id="invited-users"></ul>
       </div>
     </section>
 
     <footer class="footer">
-      <span id="total-users">0 usuários convidados</span>
-      <span id="total-bonus">R$ 0,00 ganhos totais</span>
       <div class="bonus-info">
-        <p>Bônus de convite: Quando um amigo se registra e investe, você recebe 35% do valor investido.</p>
+        <p>Bônus: quando um amigo se registra e investe, você ganha 35% do valor investido.</p>
       </div>
     </footer>
   </div>
 
   <script>
-    // Configuração do Firebase
+    // Configuração Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -137,11 +128,10 @@
       messagingSenderId: "646397677016",
       appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
-
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Função para copiar
+    // Função copiar texto
     function copyText(id) {
       const text = document.getElementById(id).textContent;
       navigator.clipboard.writeText(text).then(() => {
@@ -149,37 +139,44 @@
       });
     }
 
-    // Código e link de convite
+    // Código de convite e link
     const meuCodigo = "1";
     const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
 
-    // Exibir dados no HTML
     document.getElementById("invite-code").textContent = meuCodigo;
     document.getElementById("invite-link").textContent = meuLink;
 
     // Buscar usuários convidados
-    database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value", snapshot => {
-      let totalBonus = 0;
-      let totalUsers = 0;
-      const list = document.getElementById("invited-users");
-      list.innerHTML = "";
+    database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+      .then(snapshot => {
+        let totalBonus = 0;
+        let totalUsers = 0;
+        const list = document.getElementById("invited-users");
+        list.innerHTML = "";
 
-      snapshot.forEach(child => {
-        const nome = child.val().nome;
-        const investimento = parseFloat(child.val().investimento || 0);
-        const bonus = investimento * 0.35;
-        totalBonus += bonus;
-        totalUsers++;
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const nome = child.val().nome;
+            const investimento = parseFloat(child.val().investimento || 0);
+            const bonus = investimento * 0.35;
+            totalBonus += bonus;
+            totalUsers++;
 
-        const li = document.createElement("li");
-        li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-        list.appendChild(li);
+            const li = document.createElement("li");
+            li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+            list.appendChild(li);
+          });
+
+          document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
+          document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
+        } else {
+          console.log("Nenhum usuário encontrado.");
+          document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+        }
+      })
+      .catch(error => {
+        console.error("Erro ao buscar dados: ", error.message);
       });
-
-      document.getElementById("lv1-bonus").textContent = `R$ ${totalBonus.toFixed(2)} Bônus`;
-      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
-      document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
-    });
   </script>
 </body>
 </html>
