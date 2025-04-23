@@ -143,97 +143,51 @@
     // Supondo que o código seja obtido do localStorage ou Firebase
     const telefoneLogado = localStorage.getItem("telefoneLogado"); // Aqui você usa o telefone logado para pegar os dados do Firebase
 
-    // Buscar dados do usuário
-    database.ref("usuarios/" + telefoneLogado).once("value")
-      .then(snapshot => {
-        if (snapshot.exists()) {
-          const usuario = snapshot.val();
-          const meuCodigo = usuario.codigo;
-          const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
+    if (telefoneLogado) {
+      // Buscar dados do usuário
+      database.ref("usuarios/" + telefoneLogado).once("value")
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const usuario = snapshot.val();
+            const meuCodigo = usuario.codigo;
+            const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
 
-          document.getElementById("invite-code").textContent = meuCodigo;
-          document.getElementById("invite-link").textContent = meuLink;
+            document.getElementById("invite-code").textContent = meuCodigo;
+            document.getElementById("invite-link").textContent = meuLink;
 
-          // Buscar usuários convidados
-          database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
-            .then(snapshot => {
-              let totalBonus = 0;
-              let totalUsers = 0;
-              const list = document.getElementById("invited-users");
-              list.innerHTML = "";
+            // Buscar usuários convidados
+            database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+              .then(snapshot => {
+                const list = document.getElementById("invited-users");
+                list.innerHTML = ""; // Limpa a lista antes de adicionar os novos usuários
 
-              if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                  const nome = child.val().nome;
-                  const investimento = parseFloat(child.val().investimento || 0);
-                  const bonus = investimento * 0.35;
-                  totalBonus += bonus;
-                  totalUsers++;
+                if (snapshot.exists()) {
+                  snapshot.forEach(child => {
+                    const nome = child.val().nome;
+                    const investimento = parseFloat(child.val().investimento || 0);
+                    const bonus = investimento * 0.35;
 
-                  const li = document.createElement("li");
-                  li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-                  list.appendChild(li);
-                });
-
-                document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
-                document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
-              } else {
-                document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
-              }
-            })
-            .catch(error => {
-              console.error("Erro ao buscar dados: ", error.message);
-            });
-        }
-      })
-      .catch(error => {
-        console.error("Erro ao buscar dados do usuário: ", error.message);
-      });
-    
-    // Função para carregar os dados dos indicados
-    const loadInviteInfo = (userId) => {
-      const userRef = firebase.database().ref('usuarios/' + userId);
-      
-      userRef.once('value', (snapshot) => {
-        if (snapshot.exists()) {
-          const userData = snapshot.val();
-          const codigoIndicacao = userData.codigoIndicacao;
-          
-          // Chama a função para buscar os usuários com esse código de indicação
-          searchUsersByCodigoIndicacao(codigoIndicacao);
-        }
-      });
-    };
-
-    // Função para buscar os usuários pelo código de indicação
-    const searchUsersByCodigoIndicacao = (codigoIndicacao) => {
-      const usuariosRef = firebase.database().ref('usuarios');
-      
-      usuariosRef.orderByChild('codigoIndicacao').equalTo(codigoIndicacao).once('value', (snapshot) => {
-        const indicadosData = snapshot.val();
-        
-        // Limpa o conteúdo do div antes de mostrar novos dados
-        document.getElementById("indicados").innerHTML = "";
-
-        if (indicadosData) {
-          for (let userId in indicadosData) {
-            const user = indicadosData[userId];
-
-            // Aqui, você pode exibir os dados dos indicados na página
-            const userElement = document.createElement("p");
-            userElement.textContent = `Nome: ${user.nome}, Saldo: ${user.saldo}, Código de Indicação: ${user.codigoIndicacao}`;
-            document.getElementById("indicados").appendChild(userElement);
+                    const li = document.createElement("li");
+                    li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+                    list.appendChild(li);
+                  });
+                } else {
+                  document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+                }
+              })
+              .catch(error => {
+                console.error("Erro ao buscar dados: ", error.message);
+              });
+          } else {
+            console.log("Usuário não encontrado.");
           }
-        } else {
-          // Caso não haja indicados
-          document.getElementById("indicados").innerHTML = "<p>Nenhum usuário indicado ainda.</p>";
-        }
-      });
-    };
-
-    // Chama a função com o ID do usuário que está logado
-    const userId = telefoneLogado; // Exemplo de ID de usuário (telefoneLogado)
-    loadInviteInfo(userId);
+        })
+        .catch(error => {
+          console.error("Erro ao buscar dados do usuário: ", error.message);
+        });
+    } else {
+      alert("Usuário não está logado.");
+    }
   </script>
 </body>
 </html>
