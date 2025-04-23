@@ -1,18 +1,20 @@
 // Importando os módulos necessários do Firebase
 import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
 
-// Obtendo as instâncias do Firebase
+// Obtendo a instância do Firebase
 const auth = getAuth();
-const db = getDatabase();
 
 // Adicionando o evento de login
 document.getElementById("botao-login").addEventListener("click", function () {
     let telefone = document.getElementById("telefone").value;
     let senha = document.getElementById("senha").value;
 
-    // Tentando fazer login no Firebase Authentication com o telefone (como email)
-    signInWithEmailAndPassword(auth, telefone + "@example.com", senha)
+    // Definindo a persistência da autenticação como LOCAL
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => {
+            // Tentando fazer login no Firebase Authentication com o telefone (como email)
+            return signInWithEmailAndPassword(auth, telefone + "@example.com", senha);
+        })
         .then((userCredential) => {
             // Login bem-sucedido
             const user = userCredential.user;
@@ -21,7 +23,7 @@ document.getElementById("botao-login").addEventListener("click", function () {
             localStorage.setItem("telefoneUsuario", telefone);
 
             // Redirecionando para a página principal
-            window.location.href = "index.html";
+            window.location.href = "index.html";  // Redireciona para a página principal
         })
         .catch((error) => {
             // Caso ocorra erro no login
