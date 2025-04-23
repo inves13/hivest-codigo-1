@@ -62,7 +62,7 @@ const loadInviteInfo = (userId) => {
 const searchUsersByCodigoIndicacao = (codigoIndicacao) => {
   const usuariosRef = firebase.database().ref('usuarios');
   
-  usuariosRef.orderByChild('codigoIndicado').equalTo(codigoIndicacao).once('value', (snapshot) => {
+  usuariosRef.orderByChild('codigoIndicacao').equalTo(codigoIndicacao).once('value', (snapshot) => {
     if (snapshot.exists()) {
       const indicadosData = snapshot.val();
       console.log(`Usuários indicados com o código ${codigoIndicacao}:`, indicadosData);
@@ -71,6 +71,12 @@ const searchUsersByCodigoIndicacao = (codigoIndicacao) => {
       for (let userId in indicadosData) {
         const user = indicadosData[userId];
         console.log(`Nome: ${user.nome}, Saldo: ${user.saldo}, Código de Indicação: ${user.codigoIndicacao}`);
+
+        // Aqui, adicione os usuários à interface da página
+        const invitedList = document.getElementById('invited-users');
+        const li = document.createElement('li');
+        li.textContent = `${user.nome} - Código: ${user.codigoIndicacao} - Saldo: R$ ${user.saldo}`;
+        invitedList.appendChild(li);
       }
     } else {
       console.log("Nenhum usuário encontrado com este código de indicação");
@@ -131,4 +137,3 @@ checkAuth(); // Verifica se o usuário está logado
 
 // Simulando uma recarga de saldo
 // addSaldo('7582713751', 100);  // Adicionando 100 ao saldo do usuário com ID 7582713751
-
