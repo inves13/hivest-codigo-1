@@ -139,43 +139,54 @@
       });
     }
 
-    // Código de convite e link
-    const meuCodigo = "1";
-    const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
+    // Supondo que o código seja obtido do localStorage ou Firebase
+    const telefoneLogado = localStorage.getItem("telefoneLogado"); // Aqui você usa o telefone logado para pegar os dados do Firebase
 
-    document.getElementById("invite-code").textContent = meuCodigo;
-    document.getElementById("invite-link").textContent = meuLink;
-
-    // Buscar usuários convidados
-    database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+    // Buscar dados do usuário
+    database.ref("usuarios/" + telefoneLogado).once("value")
       .then(snapshot => {
-        let totalBonus = 0;
-        let totalUsers = 0;
-        const list = document.getElementById("invited-users");
-        list.innerHTML = "";
-
         if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            const nome = child.val().nome;
-            const investimento = parseFloat(child.val().investimento || 0);
-            const bonus = investimento * 0.35;
-            totalBonus += bonus;
-            totalUsers++;
+          const usuario = snapshot.val();
+          const meuCodigo = usuario.codigo;
+          const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
 
-            const li = document.createElement("li");
-            li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-            list.appendChild(li);
-          });
+          document.getElementById("invite-code").textContent = meuCodigo;
+          document.getElementById("invite-link").textContent = meuLink;
 
-          document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
-          document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
-        } else {
-          console.log("Nenhum usuário encontrado.");
-          document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+          // Buscar usuários convidados
+          database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+            .then(snapshot => {
+              let totalBonus = 0;
+              let totalUsers = 0;
+              const list = document.getElementById("invited-users");
+              list.innerHTML = "";
+
+              if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                  const nome = child.val().nome;
+                  const investimento = parseFloat(child.val().investimento || 0);
+                  const bonus = investimento * 0.35;
+                  totalBonus += bonus;
+                  totalUsers++;
+
+                  const li = document.createElement("li");
+                  li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+                  list.appendChild(li);
+                });
+
+                document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2)} ganhos totais`;
+                document.getElementById("total-users").textContent = `${totalUsers} usuários convidados`;
+              } else {
+                document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+              }
+            })
+            .catch(error => {
+              console.error("Erro ao buscar dados: ", error.message);
+            });
         }
       })
       .catch(error => {
-        console.error("Erro ao buscar dados: ", error.message);
+        console.error("Erro ao buscar dados do usuário: ", error.message);
       });
   </script>
 </body>
