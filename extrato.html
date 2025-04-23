@@ -62,12 +62,12 @@
     db.ref("usuarios/" + telefone + "/extratoRetirada").on("child_added", childSnapshot => {
       const retirada = childSnapshot.val();
       
-      // Verificando se o status está vazio, se sim, será "Aguardando"
-      const statusClass = retirada.status === "Aprovado" ? "approved" :
-                          (retirada.status === "Rejeitado" ? "rejected" : "pending");
-
-      // Definindo o status como "Aguardando" caso o status não esteja definido
-      const statusTexto = retirada.status || "Aguardando";
+      // Garantir que o status seja "Aguardando" por padrão
+      const statusTexto = retirada.status && retirada.status !== "" ? retirada.status : "Aguardando";  // Se o status estiver vazio ou não definido, mostra "Aguardando"
+      
+      // Determina a classe CSS do status
+      const statusClass = statusTexto === "Aprovado" ? "approved" :
+                          (statusTexto === "Rejeitado" ? "rejected" : "pending");
 
       const valorRetirado = parseFloat(retirada.valor).toFixed(2);
       const recebimento = parseFloat(retirada.recebimento || 0).toFixed(2);
