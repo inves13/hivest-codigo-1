@@ -5,15 +5,15 @@ import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getDatabase, ref, get, set } from "firebase/database";
 
-// Configuração do Firebase
+// Configuração do Firebase (dados reais do seu projeto)
 const firebaseConfig = {
-  apiKey: "sua-api-key",            // Substitua com a sua chave da API
-  authDomain: "seu-auth-domain",     // Substitua com o seu domínio de autenticação
-  databaseURL: "sua-database-url",   // URL do seu banco de dados
-  projectId: "seu-project-id",       // ID do seu projeto
-  storageBucket: "seu-storage-bucket", // Bucket de armazenamento (se necessário)
-  messagingSenderId: "seu-sender-id", // ID do remetente de mensagens
-  appId: "seu-app-id"               // ID do seu aplicativo
+  apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+  authDomain: "hinvest-f4354.firebaseapp.com",
+  databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+  projectId: "hinvest-f4354",
+  storageBucket: "hinvest-f4354.appspot.com",
+  messagingSenderId: "646397677016",
+  appId: "1:646397677016:web:f05ca27a38439568bff6ad"
 };
 
 // Inicializa o Firebase
