@@ -64,14 +64,18 @@ window.addEventListener("DOMContentLoaded", () => {
         const taxa = parseFloat(item.taxa || 0);
         const valorLiquido = parseFloat(item.valorLiquido || (valor - taxa));
         const data = item.data || "Data não informada";
+        const status = item.status || "Aguardando"; // Se o status não existir, será "Aguardando"
 
         const div = document.createElement("div");
         div.className = "extrato-item";
+        
+        // Adiciona o status ao HTML
         div.innerHTML = `
           <p><strong>Valor Bruto:</strong> R$ ${valor.toFixed(2)}</p>
           <p><strong>Taxa:</strong> R$ ${taxa.toFixed(2)}</p>
           <p><strong>Valor Líquido:</strong> R$ ${valorLiquido.toFixed(2)}</p>
           <p><strong>Data:</strong> ${data}</p>
+          <p><strong>Status:</strong> ${status}</p> <!-- Exibe o status -->
         `;
         listaExtrato.appendChild(div);
       });
