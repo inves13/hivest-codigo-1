@@ -143,6 +143,9 @@
     // Supondo que o código seja obtido do localStorage ou Firebase
     const telefoneLogado = localStorage.getItem("telefoneLogado"); // Aqui você usa o telefone logado para pegar os dados do Firebase
 
+    // Adicionando o console.log para verificar o telefone logado
+    console.log("Telefone Logado: ", telefoneLogado);
+
     if (telefoneLogado) {
       // Buscar dados do usuário
       database.ref("usuarios/" + telefoneLogado).once("value")
