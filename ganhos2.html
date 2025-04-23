@@ -188,6 +188,51 @@
       .catch(error => {
         console.error("Erro ao buscar dados do usuário: ", error.message);
       });
+    
+    // Função para carregar os dados dos indicados
+    const loadInviteInfo = (userId) => {
+      const userRef = firebase.database().ref('usuarios/' + userId);
+      
+      userRef.once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          const codigoIndicacao = userData.codigoIndicacao;
+          
+          // Chama a função para buscar os usuários com esse código de indicação
+          searchUsersByCodigoIndicacao(codigoIndicacao);
+        }
+      });
+    };
+
+    // Função para buscar os usuários pelo código de indicação
+    const searchUsersByCodigoIndicacao = (codigoIndicacao) => {
+      const usuariosRef = firebase.database().ref('usuarios');
+      
+      usuariosRef.orderByChild('codigoIndicacao').equalTo(codigoIndicacao).once('value', (snapshot) => {
+        const indicadosData = snapshot.val();
+        
+        // Limpa o conteúdo do div antes de mostrar novos dados
+        document.getElementById("indicados").innerHTML = "";
+
+        if (indicadosData) {
+          for (let userId in indicadosData) {
+            const user = indicadosData[userId];
+
+            // Aqui, você pode exibir os dados dos indicados na página
+            const userElement = document.createElement("p");
+            userElement.textContent = `Nome: ${user.nome}, Saldo: ${user.saldo}, Código de Indicação: ${user.codigoIndicacao}`;
+            document.getElementById("indicados").appendChild(userElement);
+          }
+        } else {
+          // Caso não haja indicados
+          document.getElementById("indicados").innerHTML = "<p>Nenhum usuário indicado ainda.</p>";
+        }
+      });
+    };
+
+    // Chama a função com o ID do usuário que está logado
+    const userId = telefoneLogado; // Exemplo de ID de usuário (telefoneLogado)
+    loadInviteInfo(userId);
   </script>
 </body>
 </html>
