@@ -107,10 +107,12 @@
       const senha = document.getElementById("cadastro-senha").value;
       const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
 
+      // Verifica se já existe um cadastro com o telefone
       db.ref("usuarios/" + telefone).once("value").then(snapshot => {
         if (snapshot.exists()) {
           alert("Já existe uma conta com esse telefone.");
         } else {
+          // Gera um código único para o novo usuário
           db.ref("usuarios").once("value").then(snapshot => {
             const total = snapshot.numChildren() + 1;
             const meuCodigo = total;
@@ -135,6 +137,8 @@
               setTimeout(() => {
                 window.location.href = "H.html"; // Redireciona após cadastro
               }, 4000);
+            }).catch(error => {
+              console.error("Erro ao salvar os dados: ", error);
             });
           });
         }
