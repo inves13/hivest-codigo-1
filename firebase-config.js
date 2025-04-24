@@ -1,9 +1,7 @@
-// firebase-config.js
-
 // Importa os módulos necessários do Firebase
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getDatabase, ref, get, set } from "firebase/database";
+import { getDatabase, ref, get, set, child } from "firebase/database";
 
 // Configuração do Firebase (dados reais do seu projeto)
 const firebaseConfig = {
@@ -24,4 +22,4 @@ const database = getDatabase(app);
 const auth = getAuth(app);
 
 // Exporta a referência para o uso em outros arquivos
-export { auth, database, ref, get, set, onAuthStateChanged };
+export { auth, database, ref, get, set, child, onAuthStateChanged };
