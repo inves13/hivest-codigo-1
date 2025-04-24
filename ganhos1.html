@@ -97,7 +97,7 @@
         card.className = "card";
         card.innerHTML = `
           <h3>${plano.nome} - R$${plano.valor}</h3>
-          <img src="imagens/PLANO_${plano.valor}.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+          <img src="1004.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
           <p>Retorno diário: R$${plano.retornoDiario.toFixed(2)}</p>
           <p>Lucro total: R$${(plano.valor * 0.05 * 50).toFixed(2)}</p>
           <button class="buy-button" onclick="comprarPlano('${plano.nome}', ${plano.valor}, ${plano.retornoDiario})">Comprar</button>
@@ -133,7 +133,7 @@
           data: new Date().toLocaleDateString(),
           retornoDiario: retornoDiario.toFixed(2),
           diasRestantes: 50,
-          imagem: `imagens/PLANO_${valor}.png`,
+         container.1004.png`,
           status: "comprado"
         };
 
@@ -168,7 +168,7 @@
             card.className = "card";
             card.innerHTML = `
               <h3>${inv.nome} - R$${inv.valor}</h3>
-              <img src="${inv.imagem}" alt="Imagem do plano ${inv.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+              <img src="1004.png" alt="Imagem do plano ${inv.valor}" style="width: 100%; height: auto; border-radius: 8px;">
               <p>Data da compra: ${inv.data}</p>
               <p>Retorno diário: R$${inv.retornoDiario}</p>
               <p>Dias restantes: ${inv.diasRestantes}</p>
