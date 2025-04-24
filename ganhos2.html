@@ -77,6 +77,10 @@
     .invited-list ul {
       padding-left: 20px;
     }
+    .invited-count {
+      font-weight: bold;
+      color: #FFD700;
+    }
   </style>
 
   <!-- Firebase SDK -->
@@ -106,7 +110,14 @@
       
       <div class="invited-list">
         <strong>Usuários convidados:</strong>
+        <p id="invited-count" class="invited-count">Carregando...</p>
         <ul id="invited-users"></ul>
+      </div>
+
+      <!-- Adição do campo "Ganho por Indicação" -->
+      <div class="invited-list">
+        <strong>Ganho por Indicação:</strong>
+        <ul id="bonus-users"></ul>
       </div>
     </section>
 
@@ -143,9 +154,6 @@
     // Supondo que o código seja obtido do localStorage ou Firebase
     const telefoneLogado = localStorage.getItem("telefoneLogado"); // Aqui você usa o telefone logado para pegar os dados do Firebase
 
-    // Adicionando o console.log para verificar o telefone logado
-    console.log("Telefone Logado: ", telefoneLogado);
-
     if (telefoneLogado) {
       // Buscar dados do usuário
       database.ref("usuarios/" + telefoneLogado).once("value")
@@ -162,21 +170,37 @@
             database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
               .then(snapshot => {
                 const list = document.getElementById("invited-users");
+                const invitedCount = document.getElementById("invited-count");
+                const bonusList = document.getElementById("bonus-users"); // Novo elemento de lista de bônus
                 list.innerHTML = ""; // Limpa a lista antes de adicionar os novos usuários
+                bonusList.innerHTML = ""; // Limpa a lista de bônus
+
+                let count = 0;
 
                 if (snapshot.exists()) {
                   snapshot.forEach(child => {
+                    count++;
                     const nome = child.val().nome;
+                    const usuarioConvidado = child.val().usuarioConvidado || "Desconhecido";
                     const investimento = parseFloat(child.val().investimento || 0);
                     const bonus = investimento * 0.35;
 
                     const li = document.createElement("li");
-                    li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+                    li.textContent = `${nome} (Convidado por: ${usuarioConvidado}) - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
                     list.appendChild(li);
+
+                    // Exibindo os ganhos por indicação no novo bloco
+                    const bonusLi = document.createElement("li");
+                    bonusLi.textContent = `${nome}: R$ ${bonus.toFixed(2)} (comissão de 35%)`;
+                    bonusList.appendChild(bonusLi);
                   });
                 } else {
                   document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+                  document.getElementById("bonus-users").innerHTML = "<li>Nenhum ganho por indicação.</li>";
                 }
+
+                // Atualiza o número de usuários convidados
+                invitedCount.textContent = `Total de usuários convidados: ${count}`;
               })
               .catch(error => {
                 console.error("Erro ao buscar dados: ", error.message);
@@ -194,3 +218,4 @@
   </script>
 </body>
 </html>
+
