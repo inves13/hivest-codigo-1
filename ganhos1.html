@@ -44,6 +44,9 @@
 
   <h1>Comprar Planos</h1>
   <h2>Saldo: R$ <span id="saldo">0.00</span></h2>
+  
+  <!-- Texto explicativo sobre os planos -->
+  <p>Escolha entre nossos diferentes planos de investimento e tenha um retorno diário garantido de 5%. Você pode começar a investir com valores a partir de R$60, com diferentes tipos de planos para atender suas necessidades. Invista agora e veja seu saldo crescer!</p>
 
   <button class="meus-produtos-button" onclick="mostrarMeusProdutos()">Meus Produtos</button>
 
@@ -94,7 +97,7 @@
         card.className = "card";
         card.innerHTML = `
           <h3>${plano.nome} - R$${plano.valor}</h3>
-          <img src="1004.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
+          <img src="imagens/PLANO_${plano.valor}.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
           <p>Retorno diário: R$${plano.retornoDiario.toFixed(2)}</p>
           <p>Lucro total: R$${(plano.valor * 0.05 * 50).toFixed(2)}</p>
           <button class="buy-button" onclick="comprarPlano('${plano.nome}', ${plano.valor}, ${plano.retornoDiario})">Comprar</button>
@@ -131,7 +134,7 @@
           retornoDiario: retornoDiario.toFixed(2),
           diasRestantes: 50,
           imagem: `imagens/PLANO_${valor}.png`,
-          status: "comprado"  // Novo campo para indicar que o plano foi comprado
+          status: "comprado"
         };
 
         investimentos.push(novoInvestimento);
@@ -165,7 +168,7 @@
             card.className = "card";
             card.innerHTML = `
               <h3>${inv.nome} - R$${inv.valor}</h3>
-              <img src="1004.png" style="width: 100%; height: auto; border-radius: 8px;">
+              <img src="${inv.imagem}" alt="Imagem do plano ${inv.valor}" style="width: 100%; height: auto; border-radius: 8px;">
               <p>Data da compra: ${inv.data}</p>
               <p>Retorno diário: R$${inv.retornoDiario}</p>
               <p>Dias restantes: ${inv.diasRestantes}</p>
