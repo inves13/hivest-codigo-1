@@ -53,6 +53,13 @@
     .logout {
       font-size: 24px;
       cursor: pointer;
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      width: 80px;
+      margin-left: auto;
     }
     .servicos {
       display: grid;
@@ -78,7 +85,8 @@
       <h3>Hivest</h3>
       <p id="telefone">Telefone: Não disponível</p>
     </div>
-    <div class="logout" onclick="logout()">🔓</div>
+    <!-- Botão de Logout -->
+    <div class="logout" onclick="logout()">Sair</div>
   </div>
 
   <!-- Serviços -->
@@ -103,7 +111,7 @@
   function logout() {
     alert("Você foi deslogado!");
     localStorage.removeItem("telefoneLogado");
-    window.location.reload();
+    window.location.href = "index.html"; // Redireciona para a página de cadastro e login
   }
 
   function carregarUsuario() {
@@ -112,7 +120,7 @@
       document.getElementById("telefone").textContent = "Telefone: " + telefone;
     } else {
       alert("Nenhum telefone logado. Faça login novamente.");
-      window.location.href = "login.html";
+      window.location.href = "index.html"; // Redireciona para a página de cadastro e login
     }
   }
 
