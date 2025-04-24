@@ -1,99 +1,86 @@
-// Inicializando Firebase
-import firebase from 'firebase/app';
-import 'firebase/database';
-import 'firebase/auth';
-
-// Configuração do Firebase (substitua pela sua configuração do Firebase)
+// Configuração Firebase
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com/",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_STORAGE_BUCKET",
-  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+  authDomain: "hinvest-f4354.firebaseapp.com",
+  databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+  projectId: "hinvest-f4354",
+  storageBucket: "hinvest-f4354.appspot.com",
+  messagingSenderId: "646397677016",
+  appId: "1:646397677016:web:f05ca27a38439568bff6ad"
 };
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-// Inicialize o Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app(); // Se já tiver uma instância inicializada
+// Função para obter o código de convite da URL
+function getCodigoFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('codigo');
 }
 
-// Função para verificar se o usuário está autenticado
-const checkAuth = () => {
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      console.log("Usuário autenticado", user.uid);
-      // Carregar informações do usuário e exibir código de indicação
-      loadInviteInfo(user.uid);
-    } else {
-      console.log("Usuário não autenticado");
-      // Redirecionar ou pedir para o usuário se logar
-    }
-  });
-};
+// Função para registrar um novo usuário
+function cadastrarUsuario(nome, telefone, codigoIndicado) {
+  const novoUsuario = {
+    nome: nome,
+    telefone: telefone,
+    codigo: gerarCodigoUnico(),
+    codigoIndicado: codigoIndicado,
+    investimento: 0, // Investimento inicial pode ser 0 ou ajustado conforme necessário
+    usuarioConvidado: codigoIndicado ? "Usuário Indicado" : "Não aplicável"
+  };
 
-// Função para carregar informações do usuário autenticado
-const loadInviteInfo = (userId) => {
-  // Referência ao banco de dados para pegar as informações de usuários
-  const userRef = firebase.database().ref('usuarios/' + userId);
+  // Adicionar usuário ao banco de dados
+  database.ref("usuarios/" + telefone).set(novoUsuario)
+    .then(() => {
+      alert("Cadastro realizado com sucesso!");
+      window.location.href = "/pagina-principal"; // Redirecionar para a página principal após o cadastro
+    })
+    .catch((error) => {
+      console.error("Erro ao cadastrar usuário: ", error.message);
+      alert("Erro ao cadastrar, tente novamente.");
+    });
+}
+
+// Função para gerar um código único para o usuário
+function gerarCodigoUnico() {
+  return Math.random().toString(36).substr(2, 9); // Gera um código aleatório de 9 caracteres
+}
+
+// Função para registrar um novo usuário com código de convite
+function registrarComCodigo() {
+  const nome = document.getElementById("nome").value;
+  const telefone = document.getElementById("telefone").value;
+  const codigoIndicado = getCodigoFromURL();
+
+  if (!nome || !telefone) {
+    alert("Por favor, preencha todos os campos!");
+    return;
+  }
+
+  cadastrarUsuario(nome, telefone, codigoIndicado);
+}
+
+// Exibir o código de indicação na página de convite
+function exibirCodigoDeConvite() {
+  const telefoneLogado = localStorage.getItem("telefoneLogado");
   
-  userRef.once('value', (snapshot) => {
-    if (snapshot.exists()) {
-      const userData = snapshot.val();
-      console.log("Dados do Usuário", userData);
-      
-      // Exibindo o código de convite
-      const userCode = userData.codigo;
-      document.getElementById('user-code').textContent = userCode;
-      const inviteLink = `https://inves13.github.io/hivest-codigo-${userCode}/?codigo=${userCode}`;
-      document.getElementById('invite-link').textContent = inviteLink;
+  if (telefoneLogado) {
+    database.ref("usuarios/" + telefoneLogado).once("value")
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const usuario = snapshot.val();
+          const codigoDeConvite = usuario.codigo;
+          document.getElementById("codigo-de-convite").textContent = codigoDeConvite;
+        }
+      })
+      .catch(error => {
+        console.error("Erro ao obter o código de convite: ", error.message);
+      });
+  } else {
+    alert("Usuário não está logado.");
+  }
+}
 
-      // Agora, vamos buscar todos os usuários que têm esse código de indicação
-      searchUsersByCodigoIndicacao(userData.codigoIndicacao);
-    } else {
-      console.log("Usuário não encontrado");
-    }
-  });
-};
-
-// Função para buscar todos os usuários com o código de indicação
-const searchUsersByCodigoIndicacao = (codigoIndicacao) => {
-  const usuariosRef = firebase.database().ref('usuarios');
-  
-  usuariosRef.orderByChild('codigoIndicacao').equalTo(codigoIndicacao).once('value', (snapshot) => {
-    const invitedList = document.getElementById('invited-users');
-    invitedList.innerHTML = ""; // Limpa a lista antes de adicionar os novos itens
-
-    if (snapshot.exists()) {
-      const indicadosData = snapshot.val();
-      console.log(`Usuários indicados com o código ${codigoIndicacao}:`, indicadosData);
-      
-      // Exibindo os dados dos indicados
-      for (let userId in indicadosData) {
-        const user = indicadosData[userId];
-        const li = document.createElement('li');
-        li.textContent = `Nome: ${user.nome} - Código: ${user.codigoIndicacao} - Saldo: R$ ${user.saldo}`;
-        invitedList.appendChild(li);
-      }
-    } else {
-      // Exibe a mensagem "Nenhum usuário convidado" caso não tenha indicado ninguém
-      const li = document.createElement('li');
-      li.textContent = "Nenhum usuário convidado ainda.";
-      invitedList.appendChild(li);
-    }
-  });
-};
-
-// Função para copiar o link de convite
-const copyLink = () => {
-  const inviteLink = document.getElementById('invite-link').textContent;
-  navigator.clipboard.writeText(inviteLink).then(() => {
-    alert('Link copiado para a área de transferência!');
-  });
-};
-
-// Exemplo de uso
-checkAuth(); // Verifica se o usuário está logado
+// Inicializa a exibição do código de convite
+window.onload = function() {
+  exibirCodigoDeConvite();
+}
