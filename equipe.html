@@ -1,1 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minha Equipe - Ganhos</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .profile span {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .team-section, .invite-section {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .invite-code, .invite-link {
+      background-color: #1e1e1e;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .invite-code span, .invite-link span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .tax, .bonus, .status {
+      margin: 5px 0;
+      font-size: 15px;
+    }
+    .copy-btn {
+      background-color: #8A2BE2;
+      color: white;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .bonus-info {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .invited-list {
+      background-color: #1e1e1e;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .invited-list ul {
+      padding-left: 20px;
+    }
+    .invited-count {
+      font-weight: bold;
+      color: #FFD700;
+    }
+  </style>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="profile">
+        <span>Minha equipe</span>
+      </div>
+    </div>
+
+    <section class="invite-section">
+      <div class="invite-code">
+        <span>Código de convite</span>
+        <p id="invite-code">Carregando...</p>
+        <button class="copy-btn" onclick="copyText('invite-code')">Cópia</button>
+      </div>
+
+      <div class="invite-link">
+        <span>Link de convite</span>
+        <p id="invite-link">Carregando...</p>
+        <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
+      </div>
+      
+      <div class="invited-list">
+        <strong>Usuários convidados:</strong>
+        <p id="invited-count" class="invited-count">Carregando...</p>
+        <ul id="invited-users"></ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="bonus-info">
+        <p>Bônus: quando um amigo se registra e investe, você ganha 35% do valor investido.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Configuração Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.appspot.com",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Função copiar texto
+    function copyText(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        // Feedback visual para o usuário
+        alert("Texto copiado!");
+      });
+    }
+
+    // Supondo que o código seja obtido do localStorage ou Firebase
+    const telefoneLogado = localStorage.getItem("telefoneLogado"); // Aqui você usa o telefone logado para pegar os dados do Firebase
+
+    // Adicionando o console.log para verificar o telefone logado
+    console.log("Telefone Logado: ", telefoneLogado);
+
+    if (telefoneLogado) {
+      // Buscar dados do usuário
+      database.ref("usuarios/" + telefoneLogado).once("value")
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const usuario = snapshot.val();
+            const meuCodigo = usuario.codigo;
+            const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
+
+            document.getElementById("invite-code").textContent = meuCodigo;
+            document.getElementById("invite-link").textContent = meuLink;
+
+            // Buscar usuários convidados
+            database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+              .then(snapshot => {
+                const list = document.getElementById("invited-users");
+                const invitedCount = document.getElementById("invited-count");
+                list.innerHTML = ""; // Limpa a lista antes de adicionar os novos usuários
+
+                let count = 0;
+
+                if (snapshot.exists()) {
+                  snapshot.forEach(child => {
+                    count++;
+                    const nome = child.val().nome;
+                    const usuarioConvidado = child.val().usuarioConvidado || "Desconhecido";
+                    const investimento = parseFloat(child.val().investimento || 0);
+                    const bonus = investimento * 0.35;
+
+                    const li = document.createElement("li");
+                    li.textContent = `${nome} (Convidado por: ${usuarioConvidado}) - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+                    list.appendChild(li);
+                  });
+                } else {
+                  document.getElementById("invited-users").innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+                }
+
+                // Atualiza o número de usuários convidados
+                invitedCount.textContent = `Total de usuários convidados: ${count}`;
+              })
+              .catch(error => {
+                console.error("Erro ao buscar dados: ", error.message);
+              });
+          } else {
+            console.log("Usuário não encontrado.");
+          }
+        })
+        .catch(error => {
+          console.error("Erro ao buscar dados do usuário: ", error.message);
+        });
+    } else {
+      alert("Usuário não está logado.");
+    }
+  </script>
+</body>
+</html>
