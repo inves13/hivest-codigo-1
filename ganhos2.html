@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HInvest</title>
+  <title>Minha Equipe - Ganhos</title>
   <style>
     body {
       background-color: #121212;
@@ -13,39 +13,28 @@
       padding: 0;
     }
     .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 10px;
     }
-    .menu {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .profile span {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .invite-code, .invite-link {
       background-color: #1e1e1e;
-      border-top: 1px solid #333;
-    }
-    .menu button {
-      flex: 1;
-      padding: 12px;
-      background: none;
-      border: none;
-      color: white;
-      font-size: 16px;
-    }
-    .menu button.active {
-      background-color: #8A2BE2;
-    }
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
-    .invite-code, .invite-link, .invited-list {
-      background-color: #1e1e1e;
+      margin: 10px 0;
       padding: 15px;
       border-radius: 8px;
-      margin: 10px 0;
+    }
+    .invite-code span, .invite-link span {
+      font-size: 18px;
+      font-weight: bold;
     }
     .copy-btn {
       background-color: #8A2BE2;
@@ -56,9 +45,24 @@
       cursor: pointer;
       margin-top: 5px;
     }
+    .invited-list {
+      background-color: #1e1e1e;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .invited-list ul {
+      padding-left: 20px;
+    }
     .invited-count {
       font-weight: bold;
       color: #FFD700;
+    }
+    .bonus-info {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
     }
   </style>
 
@@ -68,45 +72,38 @@
 </head>
 <body>
   <div class="container">
-
-    <!-- Seção da Minha Equipe -->
-    <div id="equipe" class="section active">
-      <h2>Minha Equipe</h2>
-      <div class="invite-code">
-        <strong>Código de convite</strong>
-        <p id="invite-code">Carregando...</p>
-        <button class="copy-btn" onclick="copyText('invite-code')">Copiar</button>
+    <div class="header">
+      <div class="profile">
+        <span>Minha equipe</span>
       </div>
-
-      <div class="invite-link">
-        <strong>Link de convite</strong>
-        <p id="invite-link">Carregando...</p>
-        <button class="copy-btn" onclick="copyText('invite-link')">Copiar</button>
-      </div>
-
-      <div class="invited-list">
-        <strong>Usuários convidados:</strong>
-        <p id="invited-count" class="invited-count">Carregando...</p>
-        <ul id="invited-users"></ul>
-      </div>
-
-      <div class="invited-list">
-        <strong>Ganho por Indicação:</strong>
-        <ul id="bonus-users"></ul>
-      </div>
-
-      <p style="text-align: center;">Bônus: quando um amigo investe, você ganha 35% do valor.</p>
     </div>
 
-    <!-- Você pode adicionar outras seções aqui como "carteira", "perfil", etc. -->
+    <div class="invite-code">
+      <span>Código de convite</span>
+      <p id="invite-code">Carregando...</p>
+      <button class="copy-btn" onclick="copyText('invite-code')">Cópia</button>
+    </div>
 
-  </div>
+    <div class="invite-link">
+      <span>Link de convite</span>
+      <p id="invite-link">Carregando...</p>
+      <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
+    </div>
 
-  <!-- Menu inferior -->
-  <div class="menu">
-    <button class="active" onclick="mostrar('equipe', this)">Equipe</button>
-    <button onclick="alert('Carteira ainda não implementada')">Carteira</button>
-    <button onclick="alert('Perfil ainda não implementado')">Perfil</button>
+    <div class="invited-list">
+      <strong>Usuários convidados:</strong>
+      <p id="invited-count" class="invited-count">Carregando...</p>
+      <ul id="invited-users"></ul>
+    </div>
+
+    <div class="invited-list">
+      <strong>Ganho por Indicação:</strong>
+      <ul id="bonus-users"></ul>
+    </div>
+
+    <div class="bonus-info">
+      <p>Bônus: quando um amigo se registra e investe, você ganha 35% do valor investido.</p>
+    </div>
   </div>
 
   <script>
@@ -123,68 +120,68 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Navegação entre abas
-    function mostrar(id, botao) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.menu button').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      botao.classList.add('active');
-    }
-
-    // Copiar texto
+    // Função copiar texto
     function copyText(id) {
       const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Texto copiado!");
+      });
     }
 
-    // Buscar dados
     const telefoneLogado = localStorage.getItem("telefoneLogado");
 
     if (telefoneLogado) {
-      database.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
-        if (snapshot.exists()) {
-          const usuario = snapshot.val();
-          const meuCodigo = usuario.codigo;
-          const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
-          document.getElementById("invite-code").textContent = meuCodigo;
-          document.getElementById("invite-link").textContent = meuLink;
+      database.ref("usuarios/" + telefoneLogado).once("value")
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const usuario = snapshot.val();
+            const meuCodigo = usuario.codigo;
+            const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
 
-          database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value").then(snapshot => {
-            const list = document.getElementById("invited-users");
-            const bonusList = document.getElementById("bonus-users");
-            const invitedCount = document.getElementById("invited-count");
+            document.getElementById("invite-code").textContent = meuCodigo;
+            document.getElementById("invite-link").textContent = meuLink;
 
-            list.innerHTML = "";
-            bonusList.innerHTML = "";
-            let count = 0;
+            // Buscar usuários convidados
+            database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
+              .then(snapshot => {
+                const list = document.getElementById("invited-users");
+                const invitedCount = document.getElementById("invited-count");
+                const bonusList = document.getElementById("bonus-users");
 
-            if (snapshot.exists()) {
-              snapshot.forEach(child => {
-                count++;
-                const nome = child.val().nome;
-                const investimento = parseFloat(child.val().investimento || 0);
-                const bonus = investimento * 0.35;
+                list.innerHTML = "";
+                bonusList.innerHTML = "";
 
-                const li = document.createElement("li");
-                li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-                list.appendChild(li);
+                let count = 0;
 
-                const bonusLi = document.createElement("li");
-                bonusLi.textContent = `${nome}: R$ ${bonus.toFixed(2)}`;
-                bonusList.appendChild(bonusLi);
+                if (snapshot.exists()) {
+                  snapshot.forEach(child => {
+                    count++;
+                    const nome = child.val().nome;
+                    const investimento = parseFloat(child.val().investimento || 0);
+                    const bonus = investimento * 0.35;
+
+                    const li = document.createElement("li");
+                    li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
+                    list.appendChild(li);
+
+                    const bonusLi = document.createElement("li");
+                    bonusLi.textContent = `${nome}: R$ ${bonus.toFixed(2)}`;
+                    bonusList.appendChild(bonusLi);
+                  });
+                } else {
+                  list.innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
+                  bonusList.innerHTML = "<li>Nenhum ganho por indicação ainda.</li>";
+                }
+
+                invitedCount.textContent = `Total de usuários convidados: ${count}`;
               });
-            } else {
-              list.innerHTML = "<li>Nenhum convidado ainda.</li>";
-              bonusList.innerHTML = "<li>Nenhum bônus ainda.</li>";
-            }
-
-            invitedCount.textContent = `Total de convidados: ${count}`;
-          });
-
-        } else {
-          alert("Usuário não encontrado.");
-        }
-      });
+          } else {
+            alert("Usuário não encontrado.");
+          }
+        })
+        .catch(error => {
+          console.error("Erro ao buscar dados do usuário:", error.message);
+        });
     } else {
       alert("Você precisa estar logado para ver sua equipe.");
     }
