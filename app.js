@@ -1,4 +1,4 @@
-import { database, ref, get, set } from './firebase-config.js';
+import { database, ref, get, set, update } from './firebase-config.js';
 
 // Função para realizar a compra do produto
 function comprarProduto(valorProduto) {
@@ -31,13 +31,14 @@ function comprarProduto(valorProduto) {
     let novaRenda = parseFloat(dadosUsuario.renda || 0) + 1; // Adicionando R$1 ao saldo acumulado do questionário
 
     // Atualizando o saldo no Firebase
-    set(usuarioRef, {
-      ...dadosUsuario, // Mantendo outros dados do usuário
+    update(usuarioRef, {
       saldo: novoSaldo,
       renda: novaRenda
+    }).then(() => {
+      alert(`Compra realizada com sucesso! Seu saldo agora é R$ ${novoSaldo.toFixed(2)}.`);
+    }).catch((error) => {
+      console.error("Erro ao atualizar dados do usuário: ", error);
     });
-
-    alert(`Compra realizada com sucesso! Seu saldo agora é R$ ${novoSaldo.toFixed(2)}.`);
   }).catch(error => {
     console.error("Erro ao carregar dados do usuário: ", error);
   });
@@ -71,14 +72,15 @@ function realizarCheckinDiario() {
     let novaRenda = rendaAtual + 1; // Adicionando R$1 à renda acumulada
 
     // Atualiza no Firebase
-    set(usuarioRef, {
-      ...dadosUsuario, // Mantendo outros dados do usuário
+    update(usuarioRef, {
       saldo: novoSaldo,
       renda: novaRenda,
       ultimoCheckin: hoje
+    }).then(() => {
+      alert("Check-in diário coletado! R$ 1,00 adicionado ao saldo.");
+    }).catch(error => {
+      console.error("Erro ao atualizar dados do usuário: ", error);
     });
-
-    alert("Check-in diário coletado! R$ 1,00 adicionado ao saldo.");
   }).catch(error => {
     console.error("Erro ao carregar dados do usuário: ", error);
   });
@@ -91,7 +93,7 @@ function adicionarLinkUsuario(userId) {
 
   // Atualiza o campo 'link' do usuário no Firebase
   const usuarioRef = ref(database, 'usuarios/' + userId);
-  set(usuarioRef, {
+  update(usuarioRef, {
     link: link
   }).then(() => {
     console.log("Link atualizado para o usuário com sucesso!");
@@ -107,7 +109,7 @@ function adicionarLinkEquipe(donoId) {
 
   // Atualiza o campo 'link' na equipe
   const equipeRef = ref(database, 'equipes/' + donoId);
-  set(equipeRef, {
+  update(equipeRef, {
     link: link
   }).then(() => {
     console.log("Link atualizado para a equipe com sucesso!");
@@ -131,3 +133,64 @@ document.getElementById("comprar-produto-btn").addEventListener("click", functio
 
 // Exemplo de como chamar a função de check-in diário
 document.getElementById("checkin-diario-btn").addEventListener("click", realizarCheckinDiario);
+import { database, ref, get } from './firebase-config.js';
+
+// Função para buscar os dados do indicado e exibir na interface
+function buscarIndicado(usuarioId) {
+  const usuarioRef = ref(database, "usuarios/" + usuarioId);
+  get(usuarioRef).then(snapshot => {
+    const dadosUsuario = snapshot.val();
+
+    if (dadosUsuario && dadosUsuario.indicadoPor) {
+      // Se o usuário tiver um indicado, busca os dados do indicado
+      const indicadoRef = ref(database, "usuarios/" + dadosUsuario.indicadoPor);
+      get(indicadoRef).then(snapshot => {
+        const dadosIndicado = snapshot.val();
+
+        if (dadosIndicado) {
+          // Exibe as informações do indicado na interface
+          exibirIndicado(dadosIndicado);
+        } else {
+          alert("Não foi possível encontrar o indicado.");
+        }
+      }).catch(error => {
+        console.error("Erro ao buscar dados do indicado:", error);
+      });
+    } else {
+      alert("Usuário não tem um indicado.");
+    }
+  }).catch(error => {
+    console.error("Erro ao buscar dados do usuário:", error);
+  });
+}
+
+// Função para exibir os dados do indicado na interface
+function exibirIndicado(dadosIndicado) {
+  // Exemplo de como exibir as informações
+  // Aqui você pode ajustar a forma de exibição conforme o layout do seu app
+  const indicacaoArea = document.getElementById("area-indicacoes");
+  
+  const nomeIndicado = dadosIndicado.nome;
+  const telefoneIndicado = dadosIndicado.telefone;
+  const saldoIndicado = dadosIndicado.saldo;
+
+  const indicadoDiv = document.createElement("div");
+  indicadoDiv.classList.add("indicacao");
+
+  indicadoDiv.innerHTML = `
+    <h3>Indicado: ${nomeIndicado}</h3>
+    <p>Telefone: ${telefoneIndicado}</p>
+    <p>Saldo: R$ ${saldoIndicado.toFixed(2)}</p>
+  `;
+
+  indicacaoArea.appendChild(indicadoDiv);
+}
+
+// Exemplo de uso: Busca e exibe os dados do indicado para o usuário logado
+let usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+if (usuarioLogado) {
+  const usuarioId = usuarioLogado.telefone;
+  buscarIndicado(usuarioId);
+} else {
+  alert("Você precisa estar logado para visualizar seus indicados.");
+}
