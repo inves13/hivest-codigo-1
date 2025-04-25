@@ -1,113 +1,119 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Minha Equipe - Ganhos</title>
+  <title>H Invest - Código de Convite</title>
   <style>
     body {
-      background-color: #121212;
+      background: #111;
       color: white;
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+      padding: 20px;
     }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-    }
-    .header {
-      text-align: center;
+    .box {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-    .profile span {
-      font-size: 22px;
+    .label {
       font-weight: bold;
+      margin-bottom: 5px;
     }
-    .invite-code, .invite-link {
-      background-color: #1e1e1e;
-      margin: 10px 0;
-      padding: 15px;
+    .linha {
+      background: #222;
+      padding: 12px;
       border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .invite-code span, .invite-link span {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .copy-btn {
-      background-color: #8A2BE2;
+    button {
+      padding: 8px 12px;
+      background: #28a745;
       color: white;
-      padding: 8px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 5px;
-    }
-    .invited-list {
-      background-color: #1e1e1e;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-      width: 100%;
-    }
-    .invited-list ul {
-      padding-left: 20px;
-    }
-    .invited-count {
       font-weight: bold;
-      color: #FFD700;
     }
-    .bonus-info {
+    h3 {
+      margin-top: 20px;
+    }
+    .info-text {
       font-size: 14px;
-      margin-top: 10px;
-      text-align: center;
+      line-height: 1.5;
+      color: #ccc;
+    }
+    ul {
+      padding-left: 20px;
+      list-style: disc;
+      color: #ccc;
     }
   </style>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="profile">
-        <span>Minha equipe</span>
-      </div>
+
+  <div class="box">
+    <div class="label">Código de Convite</div>
+    <div class="linha">
+      <span id="codigo">Carregando...</span>
+      <button onclick="copiarTexto('codigo')">Copiar</button>
     </div>
 
-    <div class="invite-code">
-      <span>Código de convite</span>
-      <p id="invite-code">Carregando...</p>
-      <button class="copy-btn" onclick="copyText('invite-code')">Cópia</button>
+    <div class="label">Link de convite</div>
+    <div class="linha">
+      <span id="link">Carregando...</span>
+      <button onclick="copiarTexto('link')">Copiar</button>
     </div>
 
-    <div class="invite-link">
-      <span>Link de convite</span>
-      <p id="invite-link">Carregando...</p>
-      <button class="copy-btn" onclick="copyText('invite-link')">Cópia</button>
-    </div>
+    <div class="label">Minha equipe <a href="#" style="color:#0f0;">Detalhes da equipe >></a></div>
 
-    <div class="invited-list">
-      <strong>Usuários convidados:</strong>
-      <p id="invited-count" class="invited-count">Carregando...</p>
-      <ul id="invited-users"></ul>
-    </div>
+    <h3>LV1</h3>
+    <div class="linha"><span>26% Taxa de comissão</span></div>
+    <div class="linha"><span id="lv1-qtd">0 Quantidade efetiva</span></div>
+    <div class="linha"><span id="lv1-bonus">R$ 0.00 Bônus</span></div>
 
-    <div class="invited-list">
-      <strong>Ganho por Indicação:</strong>
-      <ul id="bonus-users"></ul>
-    </div>
+    <h3>LV2</h3>
+    <div class="linha"><span>1% Taxa de comissão</span></div>
+    <div class="linha"><span id="lv2-qtd">0 Quantidade efetiva</span></div>
+    <div class="linha"><span id="lv2-bonus">R$ 0.00 Bônus</span></div>
 
-    <div class="bonus-info">
-      <p>Bônus: quando um amigo se registra e investe, você ganha 35% do valor investido.</p>
+    <h3>LV3</h3>
+    <div class="linha"><span>1% Taxa de comissão</span></div>
+    <div class="linha"><span id="lv3-qtd">0 Quantidade efetiva</span></div>
+    <div class="linha"><span id="lv3-bonus">R$ 0.00 Bônus</span></div>
+
+    <div class="linha"><strong>Número de pessoas</strong><span id="total-pessoas">0</span></div>
+    <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0.00</span></div>
+
+    <h3>Lista da equipe completa</h3>
+    <ul id="listaEquipe"></ul>
+    <p>Total de membros: <span id="totalEquipe">0</span></p>
+    <p>Comissão total: R$ <span id="totalComissao">0.00</span></p>
+  </div>
+
+  <div class="box">
+    <h3>Prêmios de convite</h3>
+    <div class="info-text">
+      Quando os amigos que você convidar se inscreverem e investirem, você receberá imediatamente <strong>25%</strong> em dinheiro de volta.<br><br>
+      Quando os membros da sua equipe de nível 2 investirem, você receberá <strong>3%</strong> em dinheiro de volta.<br><br>
+      Quando os membros da sua equipe Nível 3 investirem, você receberá <strong>1%</strong> em dinheiro de volta.<br><br>
+      Depois que os membros da sua equipe investem, as recompensas em dinheiro são enviadas diretamente para o saldo da sua conta e você pode sacar dinheiro a qualquer momento.
     </div>
   </div>
 
+  <!-- Adicionando o novo div -->
+  <div id="area-indicacoes"></div>
+
   <script>
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
       authDomain: "hinvest-f4354.firebaseapp.com",
@@ -117,74 +123,86 @@
       messagingSenderId: "646397677016",
       appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
+
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
 
-    // Função copiar texto
-    function copyText(id) {
-      const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Texto copiado!");
+    const telefone = localStorage.getItem("telefoneLogado");
+    if (!telefone) {
+      window.location.href = "index.html";
+    }
+
+    function copiarTexto(id) {
+      const texto = document.getElementById(id).textContent.trim();
+      navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
+    }
+
+    db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+      const user = snapshot.val();
+      if (!user) return;
+
+      const codigo = user.codigo || "1";
+      document.getElementById("codigo").textContent = codigo;
+      document.getElementById("link").textContent = `https://inves13.github.io/hivest-codigo-1/?codigo=${codigo}`;
+    });
+
+    db.ref("usuarios/" + telefone + "/equipe").once("value").then(snapshot => {
+      if (!snapshot.exists()) return;
+
+      let totalPessoas = 0;
+      let totalBonus = 0;
+
+      let lv1 = { qtd: 0, bonus: 0 };
+      let lv2 = { qtd: 0, bonus: 0 };
+      let lv3 = { qtd: 0, bonus: 0 };
+
+      const listaUl = document.getElementById("listaEquipe");
+      let totalEquipe = 0;
+      let totalComissao = 0;
+
+      snapshot.forEach(child => {
+        const item = child.val();
+        totalPessoas++;
+        totalEquipe++;
+
+        const nivel = item.nivel;
+        const bonus = parseFloat(item.bonus || 0);
+        const nome = item.nome || "Sem nome";
+
+        totalBonus += bonus;
+        totalComissao += bonus;
+
+        if (nivel === 1) {
+          lv1.qtd++;
+          lv1.bonus += bonus;
+        } else if (nivel === 2) {
+          lv2.qtd++;
+          lv2.bonus += bonus;
+        } else if (nivel === 3) {
+          lv3.qtd++;
+          lv3.bonus += bonus;
+        }
+
+        const li = document.createElement("li");
+        li.textContent = `${nome} - Comissão: R$ ${bonus.toFixed(2).replace('.', ',')}`;
+        listaUl.appendChild(li);
       });
-    }
 
-    const telefoneLogado = localStorage.getItem("telefoneLogado");
+      document.getElementById("lv1-qtd").textContent = `${lv1.qtd} Quantidade efetiva`;
+      document.getElementById("lv1-bonus").textContent = `R$ ${lv1.bonus.toFixed(2).replace('.', ',')} Bônus`;
 
-    if (telefoneLogado) {
-      database.ref("usuarios/" + telefoneLogado).once("value")
-        .then(snapshot => {
-          if (snapshot.exists()) {
-            const usuario = snapshot.val();
-            const meuCodigo = usuario.codigo;
-            const meuLink = `https://inves13.github.io/hivest-codigo-1/?codigo=${meuCodigo}`;
+      document.getElementById("lv2-qtd").textContent = `${lv2.qtd} Quantidade efetiva`;
+      document.getElementById("lv2-bonus").textContent = `R$ ${lv2.bonus.toFixed(2).replace('.', ',')} Bônus`;
 
-            document.getElementById("invite-code").textContent = meuCodigo;
-            document.getElementById("invite-link").textContent = meuLink;
+      document.getElementById("lv3-qtd").textContent = `${lv3.qtd} Quantidade efetiva`;
+      document.getElementById("lv3-bonus").textContent = `R$ ${lv3.bonus.toFixed(2).replace('.', ',')} Bônus`;
 
-            // Buscar usuários convidados
-            database.ref("usuarios").orderByChild("codigoIndicado").equalTo(meuCodigo).once("value")
-              .then(snapshot => {
-                const list = document.getElementById("invited-users");
-                const invitedCount = document.getElementById("invited-count");
-                const bonusList = document.getElementById("bonus-users");
+      document.getElementById("total-pessoas").textContent = totalPessoas;
+      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2).replace('.', ',')}`;
 
-                list.innerHTML = "";
-                bonusList.innerHTML = "";
-
-                let count = 0;
-
-                if (snapshot.exists()) {
-                  snapshot.forEach(child => {
-                    count++;
-                    const nome = child.val().nome;
-                    const investimento = parseFloat(child.val().investimento || 0);
-                    const bonus = investimento * 0.35;
-
-                    const li = document.createElement("li");
-                    li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${bonus.toFixed(2)}`;
-                    list.appendChild(li);
-
-                    const bonusLi = document.createElement("li");
-                    bonusLi.textContent = `${nome}: R$ ${bonus.toFixed(2)}`;
-                    bonusList.appendChild(bonusLi);
-                  });
-                } else {
-                  list.innerHTML = "<li>Nenhum usuário convidado ainda.</li>";
-                  bonusList.innerHTML = "<li>Nenhum ganho por indicação ainda.</li>";
-                }
-
-                invitedCount.textContent = `Total de usuários convidados: ${count}`;
-              });
-          } else {
-            alert("Usuário não encontrado.");
-          }
-        })
-        .catch(error => {
-          console.error("Erro ao buscar dados do usuário:", error.message);
-        });
-    } else {
-      alert("Você precisa estar logado para ver sua equipe.");
-    }
+      document.getElementById("totalEquipe").textContent = totalEquipe;
+      document.getElementById("totalComissao").textContent = totalComissao.toFixed(2).replace('.', ',');
+    });
   </script>
 </body>
 </html>
