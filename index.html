@@ -57,6 +57,8 @@
 </head>
 <body>
   <div class="form-box">
+    <img src="1004.png" alt="Imagem H Invest" style="display:block; margin: 0 auto 20px auto; max-width: 100%; border-radius: 12px;" />
+
     <h2>H Invest</h2>
 
     <h3>Criar Conta</h3>
@@ -107,17 +109,14 @@
       const senha = document.getElementById("cadastro-senha").value;
       const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
 
-      // Verifica se já existe um cadastro com o telefone
       db.ref("usuarios/" + telefone).once("value").then(snapshot => {
         if (snapshot.exists()) {
           alert("Já existe uma conta com esse telefone.");
         } else {
-          // Gera um código único para o novo usuário
           db.ref("usuarios").once("value").then(snapshot => {
             const total = snapshot.numChildren() + 1;
             const meuCodigo = total;
 
-            // Salvando dados do usuário no Firebase
             db.ref("usuarios/" + telefone).set({
               nome,
               senha,
@@ -126,7 +125,7 @@
               recebimento: 0,
               ultimoCheckin: "",
               codigoIndicacao,
-              codigo: meuCodigo,  // Código único gerado
+              codigo: meuCodigo,
               timestamp: Date.now()
             }).then(() => {
               document.getElementById("codigo-gerado").innerText =
@@ -135,7 +134,7 @@
 
               localStorage.setItem("telefoneLogado", telefone);
               setTimeout(() => {
-                window.location.href = "H.html"; // Redireciona após cadastro
+                window.location.href = "H.html";
               }, 4000);
             }).catch(error => {
               console.error("Erro ao salvar os dados: ", error);
@@ -155,7 +154,7 @@
         const user = snapshot.val();
         if (user && user.senha === senha) {
           localStorage.setItem("telefoneLogado", telefone);
-          window.location.href = "H.html"; // Redireciona após login bem-sucedido
+          window.location.href = "H.html";
         } else {
           alert("Telefone ou senha incorretos!");
         }
