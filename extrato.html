@@ -34,6 +34,18 @@
       background-color: #dc3545;
       color: white;
     }
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
@@ -61,7 +73,8 @@
     const telefone = snapshot.key;
     db.ref("usuarios/" + telefone + "/extratoRetirada").on("child_added", childSnapshot => {
       const retirada = childSnapshot.val();
-      
+      const retiradaKey = childSnapshot.key; // Chave da retirada para atualização futura
+
       // Garantir que o status seja "Aguardando" por padrão
       const statusTexto = retirada.status && retirada.status !== "" ? retirada.status : "Aguardando";  // Se o status estiver vazio ou não definido, mostra "Aguardando"
       
@@ -75,15 +88,34 @@
 
       const container = document.getElementById("retiradasContainer");
       container.innerHTML += `
-        <div class="card ${statusClass}">
+        <div class="card ${statusClass}" id="retirada-${retiradaKey}">
           <b>Usuário:</b> ${telefone}<br>
           <b>Valor retirado:</b> R$${valorRetirado}<br>
           <b>Recebido:</b> R$${recebimento}<br>
           <b>Data:</b> ${dataRetirada}<br>
-          <b>Status:</b> ${statusTexto}
+          <b>Status:</b> ${statusTexto}<br>
+          ${statusTexto === "Aguardando" ? `<button onclick="aprovarRetirada('${telefone}', '${retiradaKey}')">Aprovar Saque</button>` : ''}
         </div>`;
     });
   });
+
+  // Função para aprovar a retirada
+  function aprovarRetirada(telefone, retiradaKey) {
+    db.ref(`usuarios/${telefone}/extratoRetirada/${retiradaKey}`).update({
+      status: "Aprovado"
+    }).then(() => {
+      alert("Retirada aprovada com sucesso!");
+      // Atualiza a interface, alterando o status para Aprovado e trocando a cor para verde
+      const card = document.getElementById(`retirada-${retiradaKey}`);
+      if (card) {
+        card.querySelector("button").outerHTML = `<b>Status:</b> Aprovado<br>`;
+        card.classList.remove("pending");
+        card.classList.add("approved");
+      }
+    }).catch(error => {
+      console.error("Erro ao aprovar retirada:", error);
+    });
+  }
 </script>
 
 </body>
