@@ -82,6 +82,7 @@
 <div id="retiradasContainer"></div>
 
 <script>
+  // Configuração do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
     authDomain: "hinvest-f4354.firebaseapp.com",
@@ -95,6 +96,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  // Função para adicionar saldo ao usuário
   function adicionarSaldo() {
     const tel = document.getElementById("telefone").value;
     const valor = parseFloat(document.getElementById("valor").value);
@@ -106,16 +108,19 @@
     });
   }
 
+  // Função para remover usuário
   function removerUsuario(telefone) {
     if (confirm("Deseja realmente remover esse usuário?")) {
       db.ref("usuarios/" + telefone).remove().then(() => alert("Usuário removido!"));
     }
   }
 
+  // Função para bloquear usuário
   function bloquearUsuario(telefone) {
     db.ref("usuarios/" + telefone).update({ bloqueado: true }).then(() => alert("Usuário bloqueado!"));
   }
 
+  // Listagem de usuários
   db.ref("usuarios").on("value", snapshot => {
     const container = document.getElementById("usuariosContainer");
     container.innerHTML = "";
@@ -144,6 +149,7 @@
     });
   });
 
+  // Listagem de saques pendentes
   db.ref("saques").on("value", snapshot => {
     const container = document.getElementById("saquesContainer");
     container.innerHTML = "";
@@ -164,18 +170,21 @@
     });
   });
 
+  // Aprovar saque
   function aprovarSaque(id) {
     if (confirm("Confirmar aprovação do saque?")) {
       db.ref("saques/" + id).update({ status: "aprovado" }).then(() => alert("Saque aprovado!"));
     }
   }
 
+  // Rejeitar saque
   function rejeitarSaque(id) {
     if (confirm("Confirmar rejeição do saque?")) {
       db.ref("saques/" + id).update({ status: "rejeitado" }).then(() => alert("Saque rejeitado!"));
     }
   }
 
+  // Listagem de recargas pendentes
   db.ref("recargas").on("value", snapshot => {
     const container = document.getElementById("recargasContainer");
     container.innerHTML = "";
@@ -193,18 +202,18 @@
     });
   });
 
+  // Aprovar recarga
   function aprovarRecarga(id, userId, valor) {
     db.ref("recargas/" + id).update({ status: "aprovado" }).then(() => {
       alert("Recarga aprovada!");
       db.ref("usuarios/" + userId + "/saldoConta").get().then(snapshot => {
         const saldoAtual = snapshot.val() || 0;
-        db.ref("usuarios/" + userId).update({
-          saldoConta: saldoAtual + valor
-        });
+        db.ref("usuarios/" + userId).update({ saldoConta: saldoAtual + valor });
       });
     });
   }
 
+  // Listagem de retiradas aprovadas
   db.ref("usuarios").on("child_added", snapshot => {
     const telefone = snapshot.key;
     db.ref("usuarios/" + telefone + "/extratoRetirada").on("child_added", childSnapshot => {
