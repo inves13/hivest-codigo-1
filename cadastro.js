@@ -9,6 +9,7 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
   let telefone = document.getElementById("telefone").value;
   let senha = document.getElementById("senha").value;
   let confirmarSenha = document.getElementById("confirmarSenha").value;
+  let codigoConvite = document.getElementById("codigoConvite").value; // Recebe o código de indicação
 
   // Verificação dos campos obrigatórios
   if (nome === "" || telefone === "" || senha === "" || confirmarSenha === "") {
@@ -32,7 +33,7 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
       get(codigoRef).then((snapshot) => {
         let novoCodigo = 1;
         if (snapshot.exists()) {
-          novoCodigo = snapshot.val() + 1;  // Incrementa o último código
+          novoCodigo = snapshot.val() + 1; // Incrementa o último código
         }
 
         // Salva os dados do usuário com o código gerado
@@ -41,7 +42,9 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
           telefone: telefone,
           senha: senha,
           saldo: 0,
-          codigo_convite: novoCodigo  // Atribui o código único ao usuário
+          codigoIndicacao: novoCodigo, // Atribui o código de indicação gerado
+          codigoConvite: codigoConvite || null, // Associa o código de convite (caso exista)
+          nivel: 1 // Atribui nível inicial ao usuário
         }).then(() => {
           // Atualiza o último código no banco de dados
           update(ref(db), { ultimo_codigo: novoCodigo });
