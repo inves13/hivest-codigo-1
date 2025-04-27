@@ -96,12 +96,12 @@
     <div class="linha"><span id="lv3-qtd">0 Quantidade efetiva</span></div>
     <div class="linha"><span id="lv3-bonus">R$ 0,00 Bônus</span></div>
 
-    <div class="linha"><strong>Número de pessoas</strong><span id="total-pessoas">0</span></div>
+    <div class="linha"><strong>Número de equipe</strong><span id="totalEquipe">0</span></div>
     <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
 
     <h3>Lista da equipe completa</h3>
     <ul id="listaEquipe"></ul>
-    <p>Total de membros: <span id="totalEquipe">0</span></p>
+    <p>Total de membros: <span id="totalMembros">0</span></p>
     <p>Comissão total: R$ <span id="totalComissao">0,00</span></p>
   </div>
 
@@ -158,19 +158,17 @@
     db.ref("usuarios/" + telefone + "/equipe").once("value").then(snapshot => {
       if (!snapshot.exists()) return;
 
-      let totalPessoas = 0;
+      let totalEquipe = 0;
       let totalBonus = 0;
       let lv1 = { qtd: 0, bonus: 0 };
       let lv2 = { qtd: 0, bonus: 0 };
       let lv3 = { qtd: 0, bonus: 0 };
 
       const listaUl = document.getElementById("listaEquipe");
-      let totalEquipe = 0;
       let totalComissao = 0;
 
       snapshot.forEach(child => {
         const item = child.val();
-        totalPessoas++;
         totalEquipe++;
 
         const nivel = item.nivel;
@@ -203,12 +201,12 @@
       document.getElementById("lv3-qtd").textContent = `${lv3.qtd} Quantidade efetiva`;
       document.getElementById("lv3-bonus").textContent = `R$ ${lv3.bonus.toFixed(2).replace('.', ',')} Bônus`;
 
-      document.getElementById("total-pessoas").textContent = totalPessoas;
-      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2).replace('.', ',')}`;
       document.getElementById("totalEquipe").textContent = totalEquipe;
+      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2).replace('.', ',')}`;
+      document.getElementById("totalMembros").textContent = totalEquipe;
       document.getElementById("totalComissao").textContent = totalComissao.toFixed(2).replace('.', ',');
     });
-  </script>
 
+  </script>
 </body>
 </html>
