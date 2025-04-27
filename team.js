@@ -6,7 +6,7 @@ function exibirEquipe(usuario) {
   const db = database;
 
   // Busca o código de indicação do usuário logado
-  get(ref(db, "usuarios/" + uid + "/codigo"))
+  get(ref(db, "usuarios/" + uid + "/codigoIndicacao"))
     .then(snap => {
       const meuCodigo = snap.val();
       if (!meuCodigo) {
@@ -14,8 +14,8 @@ function exibirEquipe(usuario) {
         return;
       }
 
-      // Busca todos os usuários que indicaram usando esse código
-      get(ref(db, "usuarios").orderByChild("codigoIndicacao").equalTo(meuCodigo))
+      // Busca todos os usuários que se cadastraram com esse código de convite
+      get(ref(db, "usuarios").orderByChild("codigoConvite").equalTo(meuCodigo))
         .then(snapshot => {
           let totalMembros = 0;
           let totalComissao = 0;
@@ -31,8 +31,8 @@ function exibirEquipe(usuario) {
             totalMembros++;
 
             // Pega o valor de investimento do usuário
-            const investimento = parseFloat(dados.investimento || 0);
-            
+            const investimento = parseFloat(dados.investimentos?.valor || 0);
+
             // A comissão é calculada como 35% do investimento
             const comissao = investimento * 0.35;
             totalComissao += comissao;
