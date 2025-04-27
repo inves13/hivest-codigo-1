@@ -83,6 +83,36 @@
       { nome: "Plano Imperador", valor: 1050, retornoDiario: 1050 * 0.05 }
     ];
 
+    // Calculando o rendimento diário e adicionando ao saldo do usuário
+    function calcularRendimentoDiario(userId, investimentoId) {
+      const db = firebase.database();
+      const investimentosRef = db.ref('usuarios/' + userId + '/investimentos/' + investimentoId);
+      investimentosRef.once('value', snapshot => {
+        const investimento = snapshot.val();
+        if (investimento) {
+          const valorInvestido = investimento.valor;
+          const rendimentoDiario = valorInvestido * 0.05;  // Exemplo: 5% de rendimento diário
+
+          // Atualizando o saldo do usuário com o rendimento diário
+          const saldoRef = db.ref('usuarios/' + userId + '/saldodaConta');
+          saldoRef.transaction(currentSaldo => {
+            return (currentSaldo || 0) + rendimentoDiario;
+          });
+
+          // Armazenando o rendimento diário no histórico
+          const rendimentosRef = db.ref('usuarios/' + userId + '/rendimentos');
+          rendimentosRef.push({
+            valor: rendimentoDiario,
+            data: new Date().toISOString(),
+            investimentoId: investimentoId
+          });
+        }
+      });
+    }
+
+    // Exemplo de como chamar essa função
+    calcularRendimentoDiario('user123', 'investimento456');
+
     function carregarPlanos(saldo) {
       const container = document.getElementById("planos");
       container.innerHTML = "";
