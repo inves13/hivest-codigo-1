@@ -27,6 +27,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+            width: 300px;
         }
 
         h2 {
@@ -46,14 +47,54 @@
         button:hover {
             background-color: #4500b5;
         }
+
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .resgate-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Estilo do menu que aparece para colocar o código */
+        .menu-container {
+            display: none;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .menu-container input {
+            width: calc(100% - 20px);
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>Resgate seu presente</h2>
-        <button onclick="resgatarPresente()">Resgatar Presente</button>
-        <p id="status"></p>
+        <button id="resgatarBtn">Resgatar Presente</button>
+
+        <!-- Menu para inserir o código -->
+        <div class="menu-container" id="menuContainer">
+            <h3>Digite o código para resgatar:</h3>
+            <input type="text" id="codigoResgate" placeholder="Código (2023 a 2030)">
+            <button onclick="validarCodigo()">Resgatar</button>
+        </div>
+        
+        <p id="status" class="status"></p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
@@ -74,31 +115,55 @@
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Função para resgatar o presente
-        function resgatarPresente() {
-            const userId = "user123"; // Substitua isso pelo ID do usuário logado
-            const presentesRef = database.ref('usuarios/' + userId + '/presentes/');
-            presentesRef.once('value', snapshot => {
-                const presentes = snapshot.val();
-                for (let presenteId in presentes) {
-                    const presente = presentes[presenteId];
-                    if (presente && presente.status === 'disponível') {
-                        // Atualiza o status do presente para "resgatado"
-                        presentesRef.child(presenteId).update({ status: 'resgatado' });
+        // Função para abrir o menu e exibir o campo de código
+        document.getElementById("resgatarBtn").addEventListener("click", function() {
+            document.getElementById("menuContainer").style.display = "block";  // Exibe o menu para inserir o código
+            document.getElementById("status").innerText = "Digite o código para resgatar seu presente.";
+        });
 
-                        // Aplica o bônus ou presente
-                        if (presente.tipo === 'bônus') {
-                            const saldoRef = database.ref('usuarios/' + userId + '/saldodaConta');
-                            saldoRef.transaction(currentSaldo => {
-                                return (currentSaldo || 0) + presente.valor;
-                            });
-                        }
+        // Função para validar o código de resgate
+        function validarCodigo() {
+            const codigo = document.getElementById("codigoResgate").value.trim();
+            if (!codigo) {
+                document.getElementById("status").innerText = "Por favor, insira um código válido.";
+                return;
+            }
 
-                        document.getElementById("status").innerText = "Presente resgatado com sucesso!";
-                    } else {
-                        document.getElementById("status").innerText = "Presente não disponível.";
-                    }
+            // Verificar se o código está dentro do intervalo permitido (2023 a 2030)
+            const codigoNumero = parseInt(codigo, 10);
+            if (codigoNumero < 2023 || codigoNumero > 2030) {
+                document.getElementById("status").innerText = "Código inválido. O código deve estar entre 2023 e 2030.";
+                return;
+            }
+
+            const userId = "user123"; // Substitua isso pelo ID do usuário logado ou recupere dinamicamente
+            const userRef = database.ref('usuarios/' + userId);
+
+            // Verifica se o usuário possui um plano ativo
+            userRef.once('value', snapshot => {
+                const userData = snapshot.val();
+                if (!userData || !userData.planoAtivo) {
+                    document.getElementById("status").innerText = "Você precisa adquirir um plano para resgatar o presente.";
+                    return;
                 }
+
+                // Verifica se o usuário já resgatou o presente hoje
+                const hoje = new Date().toISOString().split('T')[0]; // Data de hoje no formato YYYY-MM-DD
+                if (userData.dataResgate === hoje) {
+                    document.getElementById("status").innerText = "Você já resgatou o presente hoje.";
+                    return;
+                }
+
+                // Adiciona R$ 0,50 ao saldo da conta do usuário
+                const saldoRef = userRef.child('saldodaConta');
+                saldoRef.transaction(currentSaldo => {
+                    return (currentSaldo || 0) + 0.50; // Adiciona 50 centavos ao saldo existente
+                });
+
+                // Atualiza a data de resgate para evitar resgates no mesmo dia
+                userRef.update({ dataResgate: hoje });
+
+                document.getElementById("status").innerText = `Presente resgatado com sucesso! Valor de R$ 0,50 adicionado ao saldo.`;
             });
         }
     </script>
