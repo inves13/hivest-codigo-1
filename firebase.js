@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
+import { getDatabase, ref, get, set, update } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 
 // Configuração do Firebase
@@ -34,10 +34,12 @@ function obterDadosUsuario(telefoneUsuario, callback) {
   });
 }
 
-// Função para salvar o código de convite
+// Função para salvar ou atualizar o código de convite
 function salvarCodigoConvite(telefone, codigo) {
   const userRef = ref(database, 'usuarios/' + telefone);
-  set(userRef, { codigo_convite: codigo })
+
+  // Utilizando 'update' para evitar sobrescrever os dados existentes
+  update(userRef, { codigo_convite: codigo })
     .then(() => {
       console.log("Código de convite salvo com sucesso!");
     })
