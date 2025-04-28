@@ -109,6 +109,48 @@
       const senha = document.getElementById("cadastro-senha").value;
       const codigoIndicacao = document.getElementById("cadastro-codigo").value || null;
 
+      // Função para registrar o usuário
+      function registrarUsuario(usuario) {
+        const db = firebase.database();
+        const codigoIndicacao = usuario.codigoIndicacao;  // Código de indicação do novo usuário
+
+        // Busca todos os usuários com o mesmo código de indicação
+        firebase.database().ref("usuarios").orderByChild("codigoIndicacao").equalTo(codigoIndicacao).once("value", snapshot => {
+          const totalUsuarios = snapshot.numChildren();  // Conta o número de usuários com esse código de indicação
+          let nivel = 1; // Nível padrão
+
+          // Define o nível com base no número de usuários
+          if (totalUsuarios >= 1 && totalUsuarios <= 5) {
+            nivel = 1;
+          } else if (totalUsuarios >= 6 && totalUsuarios <= 10) {
+            nivel = 2;
+          } else {
+            nivel = 3;
+          }
+
+          // Cria um novo registro para o usuário
+          const usuarioRef = firebase.database().ref('usuarios').push();
+          usuarioRef.set({
+            nome: usuario.nome,
+            codigoIndicacao: usuario.codigoIndicacao,
+            nivel: nivel, // Armazena o nível do usuário
+            saldo: 0,
+            investimentos: {
+              valor: 0
+            },
+            // Adicione outros campos necessários para o cadastro
+          }).then(() => {
+            console.log('Usuário registrado com sucesso!');
+          }).catch((error) => {
+            console.error('Erro ao registrar o usuário:', error);
+          });
+        })
+        .catch(error => {
+          console.error("Erro ao buscar usuários com código de indicação:", error);
+        });
+      }
+
+      // Verifica se o telefone já existe
       db.ref("usuarios/" + telefone).once("value").then(snapshot => {
         if (snapshot.exists()) {
           alert("Já existe uma conta com esse telefone.");
