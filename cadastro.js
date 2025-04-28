@@ -49,6 +49,39 @@ document.getElementById("botao-cadastro").addEventListener("click", function() {
           // Atualiza o último código no banco de dados
           update(ref(db), { ultimo_codigo: novoCodigo });
 
+          // Se o usuário usou um código de convite, atualizar a equipe da pessoa que convidou
+          if (codigoConvite) {
+            const conviteRef = ref(db, 'usuarios');
+            get(conviteRef).then((snapshot) => {
+              snapshot.forEach(childSnapshot => {
+                const dados = childSnapshot.val();
+                if (dados.codigoIndicacao == codigoConvite) {  // Encontrou o usuário que fez a indicação
+                  const uidConvite = childSnapshot.key;
+                  
+                  // Atualiza o número de membros da equipe
+                  const equipeRef = ref(db, 'usuarios/' + uidConvite + '/equipe');
+                  get(equipeRef).then((equipeSnapshot) => {
+                    let numeroMembros = equipeSnapshot.exists() ? equipeSnapshot.val() : 0;
+                    numeroMembros++;
+
+                    // Atualiza o número de membros da equipe
+                    update(ref(db, 'usuarios/' + uidConvite), { equipe: numeroMembros });
+
+                    // Se a comissão por indicação for baseada no número de membros, atualize a comissão aqui
+                    const comissaoRef = ref(db, 'usuarios/' + uidConvite + '/comissao');
+                    get(comissaoRef).then((comissaoSnapshot) => {
+                      let comissao = comissaoSnapshot.exists() ? comissaoSnapshot.val() : 0;
+                      comissao += 10;  // Exemplo de bônus por indicação (R$ 10,00 por novo membro)
+
+                      // Atualiza a comissão do usuário que convidou
+                      update(ref(db, 'usuarios/' + uidConvite), { comissao: comissao });
+                    });
+                  });
+                }
+              });
+            });
+          }
+
           alert("Cadastro realizado com sucesso!");
           window.location.href = "login.html"; // Redireciona para a página de login
         }).catch((error) => {
