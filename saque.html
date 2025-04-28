@@ -1,284 +1,176 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Carteira e Saque</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #000;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: #111;
-      border-bottom: 1px solid #333;
-      color: white;
-    }
-    header a {
-      text-decoration: none;
-      color: #00f0ff;
-      font-weight: bold;
-    }
-    .carteira {
-      padding: 20px 10px;
-      text-align: center;
-    }
-    .saldos {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      text-align: center;
-      color: white;
-    }
-    .saldo {
-      padding: 10px;
-      background: #111;
-      width: 30%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,240,255,0.3);
-    }
-    .saldo img {
-      width: 50px;
-      height: 50px;
-    }
-    .saldo p {
-      margin: 10px 0 5px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .saldo span {
-      display: block;
-      font-size: 14px;
-      color: #ccc;
-    }
-    section.conta, section.saque {
-      background: #111;
-      margin: 20px auto;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
-      text-align: center;
-      color: white;
-    }
-    section h2 {
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #00f0ff;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin: 10px 0 5px;
-      font-weight: bold;
-      color: white;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #555;
-      border-radius: 8px;
-      background: #222;
-      color: white;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-    #valorLiquido {
-      color: #28a745;
-    }
-    #status {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #dc3545;
-    }
-  </style>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HInvest - Sistema de Investimentos</title>
+    <style>
+        /* Estilo básico para o layout */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .saldo-container, .investimento-container, .saque-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .saldo-container h2, .investimento-container h2, .saque-container h2 {
+            font-size: 18px;
+            color: #333;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button:disabled {
+            background-color: #cccccc;
+        }
+        .status-message {
+            font-size: 14px;
+            color: #ff0000;
+            margin-top: 10px;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .value {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
-  <header>
-    <h2>Carteira</h2>
-    <a href="extrato.html">Ver Extrato</a>
-  </header>
-
-  <!-- SALDOS -->
-  <section class="carteira">
-    <div class="saldos">
-      <div class="saldo">
-        <img src="10004.png" alt="">
-        <p id="saldo-conta">R$ 0.00</p>
-        <span>Saldo da Conta</span>
-      </div>
-      <div class="saldo">
-        <img src="10004.png" alt="">
-        <p id="renda-acumulada">R$ 0.00</p>
-        <span>Renda Acumulada</span>
-      </div>
-      <div class="saldo">
-        <img src="10004.png" alt="">
-        <p id="valor-recebimento">R$ 0.00</p>
-        <span>Valor de Recebimento</span>
-      </div>
+<div class="container">
+    <div class="saldo-container">
+        <h2>Saldo da Conta</h2>
+        <p>Saldo atual: <span id="saldo-conta">R$ 20,00</span></p>
+        <p>Renda acumulada: <span id="renda-acumulada">R$ 0,00</span></p>
+        <p>Valor a ser recebido: <span id="valor-recebimento">R$ 0,00</span></p>
     </div>
-  </section>
 
-  <!-- CONTA BANCÁRIA -->
-  <section class="conta">
-    <h2>Conta Bancária</h2>
-    <label>Nome do Titular:</label>
-    <input type="text" id="nomeTitular" placeholder="Nome completo" />
+    <div class="investimento-container">
+        <h2>Investimento</h2>
+        <p>Plano: <span id="plano-nome">Plano Bronze</span></p>
+        <p>Status do Plano: <span id="status">Não comprado</span></p>
+        <p>Retorno diário: R$ <span id="retorno-diario">3,00</span></p>
+    </div>
 
-    <label>Tipo de chave PIX:</label>
-    <select id="tipoChave">
-      <option value="email">Email</option>
-      <option value="telefone">Telefone</option>
-      <option value="cpf">CPF</option>
-    </select>
+    <div class="saque-container">
+        <h2>Saque</h2>
+        <p>Informe o valor que deseja sacar:</p>
+        <input type="number" id="valorSaque" placeholder="Valor do saque" oninput="calcularValorRecebido()" />
+        <p>Valor líquido após taxa (12%): <span id="valorLiquido">R$ 0,00</span></p>
+        <button id="confirmarSaque" class="button" disabled>Confirmar Saque</button>
+        <p class="status-message" id="status-saques"></p>
+    </div>
+</div>
 
-    <label>Chave PIX:</label>
-    <input type="text" id="chavePix" placeholder="Sua chave PIX" />
-    <button id="salvarConta">Salvar Conta</button>
-  </section>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+<script>
+  // Configuração do Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+    authDomain: "hinvest-f4354.firebaseapp.com",
+    databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+    projectId: "hinvest-f4354",
+    storageBucket: "hinvest-f4354.appspot.com",
+    messagingSenderId: "646397677016",
+    appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const userId = localStorage.getItem("telefoneLogado");
+  const userRef = db.ref("usuarios/" + userId);
 
-  <!-- SAQUE -->
-  <section class="saque">
-    <h2>Saque</h2>
-    <label>Valor para saque (mínimo R$20):</label>
-    <input type="number" id="valorSaque" placeholder="Ex: 100" oninput="calcularValorRecebido()" />
-    <p><strong>Valor a ser recebido: <span id="valorLiquido">R$ 0.00</span></strong></p>
-    <button id="confirmarSaque">Sacar</button>
-    <p id="status"></p>
-  </section>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
-      authDomain: "hinvest-f4354.firebaseapp.com",
-      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
-      projectId: "hinvest-f4354",
-      storageBucket: "hinvest-f4354.appspot.com",
-      messagingSenderId: "646397677016",
-      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const userId = localStorage.getItem("telefoneLogado");
-    const userRef = db.ref("usuarios/" + userId);
-
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!userId) {
-        alert("Usuário não logado.");
-        window.location.href = "index.html";
-        return;
-      }
-
-      userRef.once("value").then(snapshot => {
-        const data = snapshot.val() || {};
-        const saldoConta = parseFloat(data.saldoConta ?? data.saldo ?? 20).toFixed(2);
-        const renda = parseFloat(data.renda || 0).toFixed(2);
-        const recebimento = parseFloat(data.recebimento || 0).toFixed(2);
-        const planoComprado = data.planoComprado || false; // Checa se o usuário comprou o plano
-
-        document.getElementById("saldo-conta").textContent = "R$ " + saldoConta;
-        document.getElementById("renda-acumulada").textContent = "R$ " + renda;
-        document.getElementById("valor-recebimento").textContent = "R$ " + recebimento;
-
-        // Preencher os dados da conta bancária
-        document.getElementById("nomeTitular").value = data.nomeTitular || "";
-        document.getElementById("tipoChave").value = data.tipoChave || "email";
-        document.getElementById("chavePix").value = data.chavePix || "";
-
-        // Verifica se o saque pode ser feito (somente se o plano foi comprado)
-        if (!planoComprado) {
-          document.getElementById("confirmarSaque").disabled = true;
-          document.getElementById("status").textContent = "Você precisa comprar um plano para liberar o saque.";
-        }
-      });
-    });
-
-    // Função para salvar os dados da conta bancária
-    document.getElementById("salvarConta").addEventListener("click", () => {
-      const nomeTitular = document.getElementById("nomeTitular").value;
-      const tipoChave = document.getElementById("tipoChave").value;
-      const chavePix = document.getElementById("chavePix").value;
-
-      if (!nomeTitular || !tipoChave || !chavePix) {
-        alert("Por favor, preencha todos os campos.");
-        return;
-      }
-
-      userRef.update({
-        nomeTitular: nomeTitular,
-        tipoChave: tipoChave,
-        chavePix: chavePix
-      }).then(() => {
-        alert("Conta bancária salva com sucesso!");
-      }).catch(error => {
-        alert("Erro ao salvar conta bancária: " + error.message);
-      });
-    });
-
-    // Função para calcular o valor líquido do saque
-    function calcularValorRecebido() {
-      const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
-      if (valorSaque >= 20) {
-        document.getElementById("valorLiquido").textContent = "R$ " + valorSaque.toFixed(2);
-      } else {
-        document.getElementById("valorLiquido").textContent = "R$ 0.00";
-      }
+  // Ao carregar a página
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!userId) {
+      alert("Usuário não logado.");
+      window.location.href = "index.html";
+      return;
     }
 
-    // Função para realizar o saque
-    document.getElementById("confirmarSaque").addEventListener("click", () => {
-      const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
-      if (valorSaque < 20) {
-        alert("O valor mínimo para saque é R$ 20,00.");
-        return;
-      }
+    // Obtendo dados do Firebase
+    userRef.once("value").then(snapshot => {
+      const data = snapshot.val() || {};
+      const saldoConta = parseFloat(data.saldoConta ?? data.saldo ?? 20).toFixed(2);
+      const renda = parseFloat(data.renda || 0).toFixed(2);
+      const recebimento = parseFloat(data.recebimento || 0).toFixed(2);
+      const planoComprado = data.investimentos && data.investimentos[0] && data.investimentos[0].status === "comprado"; // Verifica se o plano foi comprado
 
-      const saldoAtual = parseFloat(document.getElementById("saldo-conta").textContent.replace('R$ ', '').replace(',', '.')) || 0;
+      document.getElementById("saldo-conta").textContent = "R$ " + saldoConta;
+      document.getElementById("renda-acumulada").textContent = "R$ " + renda;
+      document.getElementById("valor-recebimento").textContent = "R$ " + recebimento;
 
-      if (valorSaque > saldoAtual) {
-        alert("Saldo insuficiente para saque.");
+      // Verifica se o saque pode ser feito (somente se o plano foi comprado)
+      if (!planoComprado) {
+        document.getElementById("confirmarSaque").disabled = true;
+        document.getElementById("status").textContent = "Você precisa comprar um plano para liberar o saque.";
       } else {
-        const novoSaldo = saldoAtual - valorSaque;
-        userRef.update({
-          saldoConta: novoSaldo.toFixed(2)
-        }).then(() => {
-          alert("Saque realizado com sucesso!");
-          document.getElementById("saldo-conta").textContent = "R$ " + novoSaldo.toFixed(2);
-        }).catch(error => {
-          alert("Erro ao realizar saque: " + error.message);
-        });
+        document.getElementById("status").textContent = "Plano comprado!";
       }
     });
-  </script>
+  });
+
+  // Função para calcular o valor líquido do saque (aplicando a taxa de 12%)
+  function calcularValorRecebido() {
+    const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
+    if (valorSaque >= 20) {
+      const taxa = 0.12; // 12% de taxa
+      const valorComTaxa = valorSaque * (1 - taxa); // Aplica a taxa de 12%
+      document.getElementById("valorLiquido").textContent = "R$ " + valorComTaxa.toFixed(2);
+      document.getElementById("confirmarSaque").disabled = false;
+    } else {
+      document.getElementById("valorLiquido").textContent = "R$ 0.00";
+      document.getElementById("confirmarSaque").disabled = true;
+    }
+  }
+
+  // Função para realizar o saque
+  document.getElementById("confirmarSaque").addEventListener("click", () => {
+    const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
+    if (valorSaque < 20) {
+      alert("O valor mínimo para saque é R$ 20,00.");
+      return;
+    }
+
+    const saldoAtual = parseFloat(document.getElementById("saldo-conta").textContent.replace('R$ ', '').replace(',', '.')) || 0;
+
+    if (valorSaque > saldoAtual) {
+      alert("Saldo insuficiente para saque.");
+    } else {
+      const taxa = 0.12; // 12% de taxa
+      const valorComTaxa = valorSaque * (1 - taxa); // Aplica a taxa de 12%
+      const novoSaldo = saldoAtual - valorSaque;
+
+      userRef.update({
+        saldoConta: novoSaldo.toFixed(2)
+      }).then(() => {
+        alert("Saque realizado com sucesso! Valor líquido recebido: R$ " + valorComTaxa.toFixed(2));
+        document.getElementById("saldo-conta").textContent = "R$ " + novoSaldo.toFixed(2);
+        document.getElementById("status-saques").textContent = "Saque realizado com sucesso!";
+      }).catch(error => {
+        alert("Erro ao realizar saque: " + error.message);
+      });
+    }
+  });
+</script>
 
 </body>
 </html>
