@@ -203,7 +203,7 @@
         const saldoConta = parseFloat(data.saldoConta ?? data.saldo ?? 20).toFixed(2);
         const renda = parseFloat(data.renda || 0).toFixed(2);
         const recebimento = parseFloat(data.recebimento || 0).toFixed(2);
-        const planoComprado = data.planoComprado || false; // Checa se o usuário comprou o plano
+        const planoComprado = data.planoComprado || false;
 
         document.getElementById("saldo-conta").textContent = "R$ " + saldoConta;
         document.getElementById("renda-acumulada").textContent = "R$ " + renda;
@@ -214,7 +214,6 @@
         document.getElementById("tipoChave").value = data.tipoChave || "email";
         document.getElementById("chavePix").value = data.chavePix || "";
 
-        // Verifica se o saque pode ser feito (somente se o plano foi comprado)
         if (!planoComprado) {
           document.getElementById("confirmarSaque").disabled = true;
           document.getElementById("status").textContent = "Você precisa comprar um plano para liberar o saque.";
@@ -222,7 +221,6 @@
       });
     });
 
-    // Função para salvar os dados da conta bancária
     document.getElementById("salvarConta").addEventListener("click", () => {
       const nomeTitular = document.getElementById("nomeTitular").value;
       const tipoChave = document.getElementById("tipoChave").value;
@@ -244,10 +242,9 @@
       });
     });
 
-    // Função para calcular o valor líquido do saque com a taxa de 12%
     function calcularValorRecebido() {
       const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
-      const taxa = 0.12; // 12% de taxa
+      const taxa = 0.12;
       if (valorSaque >= 20) {
         const valorLiquido = valorSaque * (1 - taxa);
         document.getElementById("valorLiquido").textContent = "R$ " + valorLiquido.toFixed(2);
@@ -256,7 +253,6 @@
       }
     }
 
-    // Função para realizar o saque
     document.getElementById("confirmarSaque").addEventListener("click", () => {
       const valorSaque = parseFloat(document.getElementById("valorSaque").value) || 0;
       if (valorSaque < 20) {
@@ -264,24 +260,21 @@
         return;
       }
 
-      const saldoAtual = parseFloat(document.getElementById("saldo-conta").textContent.replace('R$ ', '').replace(',', '.')) || 0;
-
-      if (valorSaque > saldoAtual) {
-        alert("Saldo insuficiente para saque.");
-      } else {
-        const taxa = 0.12;
-        const valorLiquido = valorSaque * (1 - taxa); // Aplica a taxa de 12%
-
-        const novoSaldo = saldoAtual - valorSaque;
-        userRef.update({
-          saldoConta: novoSaldo.toFixed(2)
-        }).then(() => {
-          alert("Saque realizado com sucesso! Você receberá R$ " + valorLiquido.toFixed(2));
-          document.getElementById("saldo-conta").textContent = "R$ " + novoSaldo.toFixed(2);
-        }).catch(error => {
-          alert("Erro ao realizar saque: " + error.message);
-        });
+      const saldoConta = parseFloat(document.getElementById("saldo-conta").textContent.replace("R$ ", "").replace(",", "."));
+      if (valorSaque > saldoConta) {
+        alert("Saldo insuficiente para o saque.");
+        return;
       }
+
+      const valorLiquido = valorSaque * 0.88;
+      userRef.update({
+        saldoConta: saldoConta - valorSaque,
+        renda: parseFloat(document.getElementById("renda-acumulada").textContent.replace("R$ ", "").replace(",", "."))
+      }).then(() => {
+        alert("Saque realizado com sucesso! Valor recebido: R$ " + valorLiquido.toFixed(2));
+      }).catch(error => {
+        alert("Erro ao realizar saque: " + error.message);
+      });
     });
   </script>
 
