@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>H Invest - Código de Convite</title>
+  <title>H Invest - Minha Equipe</title>
   <style>
     body {
       background: #111;
@@ -43,15 +43,19 @@
     h3 {
       margin-top: 20px;
     }
-    .info-text {
-      font-size: 14px;
-      line-height: 1.5;
-      color: #ccc;
+    #membros-lista {
+      background: #222;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
     }
-    ul {
-      padding-left: 20px;
-      list-style: disc;
-      color: #ccc;
+    .membro {
+      background: #333;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
     }
   </style>
 
@@ -61,152 +65,177 @@
 </head>
 <body>
 
-  <div class="box">
-    <div class="label">Código de Convite</div>
-    <div class="linha">
-      <span id="codigo">Carregando...</span>
-      <button onclick="copiarTexto('codigo')">Copiar</button>
-    </div>
-
-    <div class="label">Link de convite</div>
-    <div class="linha">
-      <span id="link">Carregando...</span>
-      <button onclick="copiarTexto('link')">Copiar</button>
-    </div>
-
-    <div class="linha">
-      <strong>Compartilhar</strong>
-      <button onclick="compartilharWhatsApp()">WhatsApp</button>
-    </div>
-
-    <div class="label">Minha equipe</div>
-
-    <h3>LV1</h3>
-    <div class="linha"><span>26% Taxa de comissão</span></div>
-    <div class="linha"><span id="lv1-qtd">0 Quantidade efetiva</span></div>
-    <div class="linha"><span id="lv1-bonus">R$ 0,00 Bônus</span></div>
-
-    <h3>LV2</h3>
-    <div class="linha"><span>1% Taxa de comissão</span></div>
-    <div class="linha"><span id="lv2-qtd">0 Quantidade efetiva</span></div>
-    <div class="linha"><span id="lv2-bonus">R$ 0,00 Bônus</span></div>
-
-    <h3>LV3</h3>
-    <div class="linha"><span>1% Taxa de comissão</span></div>
-    <div class="linha"><span id="lv3-qtd">0 Quantidade efetiva</span></div>
-    <div class="linha"><span id="lv3-bonus">R$ 0,00 Bônus</span></div>
-
-    <div class="linha"><strong>Número de equipe</strong><span id="totalEquipe">0</span></div>
-    <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
-
-    <h3>Lista da equipe completa</h3>
-    <ul id="listaEquipe"></ul>
-    <p>Total de membros: <span id="totalMembros">0</span></p>
-    <p>Comissão total: R$ <span id="totalComissao">0,00</span></p>
+<div class="box">
+  <div class="label">Código de Convite</div>
+  <div class="linha">
+    <span id="codigo">Carregando...</span>
+    <button onclick="copiarTexto('codigo')">Copiar</button>
   </div>
 
-  <div class="box">
-    <h3>Prêmios de convite</h3>
-    <div class="info-text">
-      Quando os amigos que você convidar se inscreverem e investirem, você receberá imediatamente <strong>26%</strong> de comissão.<br><br>
-      Quando os membros da sua equipe de nível 2 investirem, você receberá <strong>1%</strong> de comissão.<br><br>
-      Quando os membros da sua equipe Nível 3 investirem, você receberá <strong>1%</strong> de comissão.<br><br>
-      As comissões são creditadas diretamente no seu saldo e podem ser sacadas a qualquer momento.
-    </div>
+  <div class="label">Link de convite</div>
+  <div class="linha">
+    <span id="link">Carregando...</span>
+    <button onclick="copiarTexto('link')">Copiar</button>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
-      authDomain: "hinvest-f4354.firebaseapp.com",
-      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
-      projectId: "hinvest-f4354",
-      storageBucket: "hinvest-f4354.appspot.com",
-      messagingSenderId: "646397677016",
-      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
-    };
+  <div class="linha">
+    <strong>Compartilhar</strong>
+    <button onclick="compartilharWhatsApp()">WhatsApp</button>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  <div class="label">Minha Equipe</div>
 
-    const telefone = localStorage.getItem("telefoneLogado");
-    if (!telefone) {
-      window.location.href = "index.html";
-    }
+  <h3>LV1</h3>
+  <div class="linha"><span>26% Taxa de comissão</span></div>
+  <div class="linha"><span id="lv1-qtd">0 Quantidade efetiva</span></div>
+  <div class="linha"><span id="lv1-bonus">R$ 0,00 Bônus</span></div>
 
-    function copiarTexto(id) {
-      const texto = document.getElementById(id).textContent.trim();
-      navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
-    }
+  <h3>LV2</h3>
+  <div class="linha"><span>1% Taxa de comissão</span></div>
+  <div class="linha"><span id="lv2-qtd">0 Quantidade efetiva</span></div>
+  <div class="linha"><span id="lv2-bonus">R$ 0,00 Bônus</span></div>
 
-    function compartilharWhatsApp() {
-      const link = document.getElementById("link").textContent.trim();
-      const texto = `Cadastre-se agora na H Invest e ganhe comissão: ${link}`;
-      const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
-    }
+  <h3>LV3</h3>
+  <div class="linha"><span>1% Taxa de comissão</span></div>
+  <div class="linha"><span id="lv3-qtd">0 Quantidade efetiva</span></div>
+  <div class="linha"><span id="lv3-bonus">R$ 0,00 Bônus</span></div>
 
-    db.ref("usuarios/" + telefone).once("value").then(snapshot => {
-      const user = snapshot.val();
-      if (!user) return;
+  <div class="linha"><strong>Número de equipe</strong><span id="totalEquipe">0</span></div>
+  <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
 
-      const codigo = user.codigo || "1";
-      document.getElementById("codigo").textContent = codigo;
-      document.getElementById("link").textContent = `https://inves13.github.io/hivest-codigo-1/?codigo=${codigo}`;
-    });
+  <!-- Botão para exibir membros -->
+  <button onclick="mostrarMembros()">Ver Membros da Equipe</button>
 
-    db.ref("usuarios/" + telefone + "/equipe").once("value").then(snapshot => {
-      if (!snapshot.exists()) return;
+  <!-- Lista de membros -->
+  <div id="membros-lista"></div>
+</div>
 
-      let totalEquipe = 0;
-      let totalBonus = 0;
-      let lv1 = { qtd: 0, bonus: 0 };
-      let lv2 = { qtd: 0, bonus: 0 };
-      let lv3 = { qtd: 0, bonus: 0 };
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+  authDomain: "hinvest-f4354.firebaseapp.com",
+  databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+  projectId: "hinvest-f4354",
+  storageBucket: "hinvest-f4354.appspot.com",
+  messagingSenderId: "646397677016",
+  appId: "1:646397677016:web:f05ca27a38439568bff6ad"
+};
 
-      const listaUl = document.getElementById("listaEquipe");
-      let totalComissao = 0;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-      snapshot.forEach(child => {
-        const item = child.val();
-        totalEquipe++;
+const telefoneLogado = localStorage.getItem("telefoneLogado");
 
-        const nivel = item.nivel;
-        const bonus = parseFloat(item.bonus || 0);
-        const nome = item.nome || "Sem nome";
+if (!telefoneLogado) {
+  window.location.href = "index.html";
+}
 
-        totalBonus += bonus;
-        totalComissao += bonus;
+db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
+  const user = snapshot.val();
+  if (user) {
+    document.getElementById("codigo").innerText = user.codigo;
+    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo;
 
-        if (nivel === 1) {
-          lv1.qtd++;
-          lv1.bonus += bonus;
-        } else if (nivel === 2) {
-          lv2.qtd++;
-          lv2.bonus += bonus;
-        } else if (nivel === 3) {
-          lv3.qtd++;
-          lv3.bonus += bonus;
+    carregarEquipe(user.codigo);
+  }
+});
+
+function carregarEquipe(meuCodigo) {
+  db.ref("usuarios").once("value").then(snapshot => {
+    let lv1 = 0, lv2 = 0, lv3 = 0;
+    let bonus1 = 0, bonus2 = 0, bonus3 = 0;
+    let membrosLv1 = [], membrosLv2 = [], membrosLv3 = [];
+
+    const usuarios = snapshot.val();
+
+    for (let telefone1 in usuarios) {
+      const user1 = usuarios[telefone1];
+      if (user1.codigoIndicacao === meuCodigo) {
+        lv1++;
+        bonus1 += 20 * 0.26; // 26% de R$20
+        membrosLv1.push(user1);
+
+        for (let telefone2 in usuarios) {
+          const user2 = usuarios[telefone2];
+          if (user2.codigoIndicacao === user1.codigo) {
+            lv2++;
+            bonus2 += 20 * 0.01; // 1% de R$20
+            membrosLv2.push(user2);
+
+            for (let telefone3 in usuarios) {
+              const user3 = usuarios[telefone3];
+              if (user3.codigoIndicacao === user2.codigo) {
+                lv3++;
+                bonus3 += 20 * 0.01; // 1% de R$20
+                membrosLv3.push(user3);
+              }
+            }
+          }
         }
+      }
+    }
 
-        const li = document.createElement("li");
-        li.textContent = `${nome} - Nível ${nivel} - Comissão: R$ ${bonus.toFixed(2).replace('.', ',')}`;
-        listaUl.appendChild(li);
-      });
+    const totalEquipe = lv1 + lv2 + lv3;
+    const totalBonus = bonus1 + bonus2 + bonus3;
 
-      document.getElementById("lv1-qtd").textContent = `${lv1.qtd} Quantidade efetiva`;
-      document.getElementById("lv1-bonus").textContent = `R$ ${lv1.bonus.toFixed(2).replace('.', ',')} Bônus`;
-      document.getElementById("lv2-qtd").textContent = `${lv2.qtd} Quantidade efetiva`;
-      document.getElementById("lv2-bonus").textContent = `R$ ${lv2.bonus.toFixed(2).replace('.', ',')} Bônus`;
-      document.getElementById("lv3-qtd").textContent = `${lv3.qtd} Quantidade efetiva`;
-      document.getElementById("lv3-bonus").textContent = `R$ ${lv3.bonus.toFixed(2).replace('.', ',')} Bônus`;
+    document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
+    document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
 
-      document.getElementById("totalEquipe").textContent = totalEquipe;
-      document.getElementById("total-bonus").textContent = `R$ ${totalBonus.toFixed(2).replace('.', ',')}`;
-      document.getElementById("totalMembros").textContent = totalEquipe;
-      document.getElementById("totalComissao").textContent = totalComissao.toFixed(2).replace('.', ',');
-    });
+    document.getElementById("lv2-qtd").innerText = lv2 + " Quantidade efetiva";
+    document.getElementById("lv2-bonus").innerText = "R$ " + bonus2.toFixed(2).replace(".", ",");
 
-  </script>
+    document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
+    document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
+
+    document.getElementById("totalEquipe").innerText = totalEquipe;
+    document.getElementById("total-bonus").innerText = "R$ " + totalBonus.toFixed(2).replace(".", ",");
+
+    // Salvar membros para exibição posterior
+    window.membrosLv1 = membrosLv1;
+    window.membrosLv2 = membrosLv2;
+    window.membrosLv3 = membrosLv3;
+  });
+}
+
+function mostrarMembros() {
+  let listaMembros = "<h3>Membros LV1</h3>";
+  listaMembros += gerarLista(window.membrosLv1);
+  listaMembros += "<h3>Membros LV2</h3>";
+  listaMembros += gerarLista(window.membrosLv2);
+  listaMembros += "<h3>Membros LV3</h3>";
+  listaMembros += gerarLista(window.membrosLv3);
+  
+  document.getElementById("membros-lista").innerHTML = listaMembros;
+}
+
+function gerarLista(membros) {
+  if (membros.length === 0) {
+    return "<p>Nenhum membro encontrado.</p>";
+  }
+  return membros.map(membro => {
+    return `
+      <div class="membro">
+        <p><strong>Nome:</strong> ${membro.nome}</p>
+        <p><strong>Telefone:</strong> ${membro.telefone}</p>
+        <p><strong>Nível:</strong> ${membro.nivel}</p>
+      </div>
+    `;
+  }).join("");
+}
+
+function copiarTexto(id) {
+  const texto = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Texto copiado: " + texto);
+  });
+}
+
+function compartilharWhatsApp() {
+  const mensagem = "Junte-se ao meu time na H Invest! Link: " + document.getElementById("link").innerText;
+  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+  window.open(url, "_blank");
+}
+</script>
+
 </body>
 </html>
