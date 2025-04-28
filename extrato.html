@@ -23,15 +23,15 @@
       margin-bottom: 20px;
     }
     .pending {
-      background-color: #ffc107;
+      background-color: #ff9800; /* Laranja para Aguardando */
       color: black;
     }
     .approved {
-      background-color: #28a745;
+      background-color: #28a745; /* Verde para Aprovado */
       color: white;
     }
     .rejected {
-      background-color: #dc3545;
+      background-color: #dc3545; /* Vermelho para Rejeitado */
       color: white;
     }
     button {
@@ -75,7 +75,7 @@
       const retirada = childSnapshot.val();
       const retiradaKey = childSnapshot.key; // Chave da retirada para atualização futura
 
-      // Garantir que o status seja "Aguardando" por padrão
+      // Verificar o status, se estiver vazio ou não definido, deve ser "Aguardando"
       const statusTexto = retirada.status && retirada.status !== "" ? retirada.status : "Aguardando";  // Se o status estiver vazio ou não definido, mostra "Aguardando"
       
       // Determina a classe CSS do status
@@ -108,6 +108,7 @@
       // Atualiza a interface, alterando o status para Aprovado e trocando a cor para verde
       const card = document.getElementById(`retirada-${retiradaKey}`);
       if (card) {
+        // Altera o botão para o texto "Aprovado" e altera a cor do status para verde
         card.querySelector("button").outerHTML = `<b>Status:</b> Aprovado<br>`;
         card.classList.remove("pending");
         card.classList.add("approved");
