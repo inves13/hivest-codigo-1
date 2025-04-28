@@ -9,14 +9,14 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: #000; /* Fundo preto */
+      background: #000;
     }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 15px 20px;
-      background-color: #111; /* Cabeçalho escuro */
+      background-color: #111;
       border-bottom: 1px solid #333;
       color: white;
     }
@@ -209,11 +209,38 @@
         document.getElementById("renda-acumulada").textContent = "R$ " + renda;
         document.getElementById("valor-recebimento").textContent = "R$ " + recebimento;
 
+        // Preencher os dados da conta bancária
+        document.getElementById("nomeTitular").value = data.nomeTitular || "";
+        document.getElementById("tipoChave").value = data.tipoChave || "email";
+        document.getElementById("chavePix").value = data.chavePix || "";
+
         // Verifica se o saque pode ser feito (somente se o plano foi comprado)
         if (!planoComprado) {
           document.getElementById("confirmarSaque").disabled = true;
           document.getElementById("status").textContent = "Você precisa comprar um plano para liberar o saque.";
         }
+      });
+    });
+
+    // Função para salvar os dados da conta bancária
+    document.getElementById("salvarConta").addEventListener("click", () => {
+      const nomeTitular = document.getElementById("nomeTitular").value;
+      const tipoChave = document.getElementById("tipoChave").value;
+      const chavePix = document.getElementById("chavePix").value;
+
+      if (!nomeTitular || !tipoChave || !chavePix) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+      }
+
+      userRef.update({
+        nomeTitular: nomeTitular,
+        tipoChave: tipoChave,
+        chavePix: chavePix
+      }).then(() => {
+        alert("Conta bancária salva com sucesso!");
+      }).catch(error => {
+        alert("Erro ao salvar conta bancária: " + error.message);
       });
     });
 
