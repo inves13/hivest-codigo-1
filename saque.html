@@ -7,6 +7,42 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    /* Ajustando a disposição dos saldos */
+    .saldos {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    .saldo {
+      text-align: center;
+      flex: 1;
+      margin: 0 10px;
+    }
+
+    .saldo img {
+      width: 50px;
+      height: 50px;
+    }
+
+    /* Centralizando a seção de conta bancária */
+    .conta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .conta label, .conta input, .conta select {
+      width: 80%;
+      margin-bottom: 10px;
+    }
+
+    .conta button {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
 
