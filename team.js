@@ -14,6 +14,8 @@ function exibirEquipe(usuario) {
         return;
       }
 
+      console.log("Código de indicação encontrado:", meuCodigo);
+
       // Busca todos os usuários que se cadastraram com esse código de convite
       get(ref(db, "usuarios").orderByChild("codigoConvite").equalTo(meuCodigo))
         .then(snapshot => {
@@ -50,6 +52,7 @@ function exibirEquipe(usuario) {
               lv3.bonus += comissao;
             }
 
+            // Criação do item na lista de membros
             const li = document.createElement("li");
             li.textContent = `${dados.nome || "Sem nome"} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${comissao.toFixed(2)}`;
             lista.appendChild(li);
@@ -67,10 +70,12 @@ function exibirEquipe(usuario) {
           document.getElementById("total-bonus").textContent = `R$ ${totalComissao.toFixed(2).replace('.', ',')} ganhos totais`;
         })
         .catch(error => {
+          console.error("Erro ao recuperar dados da equipe:", error);
           alert("Erro ao recuperar dados da equipe: " + error.message);
         });
     })
     .catch(error => {
+      console.error("Erro ao buscar seu código de indicação:", error);
       alert("Erro ao buscar seu código de indicação: " + error.message);
     });
 }
