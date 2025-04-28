@@ -172,7 +172,7 @@
     <label>Valor para saque (mínimo R$20):</label>
     <input type="number" id="valorSaque" placeholder="Ex: 100" oninput="calcularValorRecebido()" />
     <p><strong>Valor a ser recebido (após taxa de 12%): <span id="valorLiquido">R$ 0.00</span></strong></p>
-    <button id="confirmarSaque">Sacar</button>
+    <button id="confirmarSaque" disabled>Sacar</button>
     <p id="status"></p>
   </section>
 
@@ -217,6 +217,14 @@
         if (!planoComprado) {
           document.getElementById("confirmarSaque").disabled = true;
           document.getElementById("status").textContent = "Você precisa comprar um plano para liberar o saque.";
+        } else {
+          document.getElementById("confirmarSaque").disabled = false;
+          document.getElementById("status").textContent = "";
+        }
+
+        // Libera o saque se o saldo for superior a R$20
+        if (saldoConta >= 20) {
+          document.getElementById("confirmarSaque").disabled = false;
         }
       });
     });
@@ -277,6 +285,5 @@
       });
     });
   </script>
-
 </body>
 </html>
