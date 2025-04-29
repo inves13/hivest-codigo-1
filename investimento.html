@@ -100,7 +100,8 @@
           <h3>${plano.nome} - R$${plano.valor}</h3>
           <img src="1004.png" alt="Imagem do plano ${plano.valor}" style="width: 100%; height: auto; border-radius: 8px;">
           <p>Retorno diário: R$${plano.retornoDiario.toFixed(2)}</p>
-          <p>Lucro total: R$${(plano.valor * 0.05 * 50).toFixed(2)}</p>
+          <p>Lucro total (50 dias): R$${(plano.retornoDiario * 50).toFixed(2)}</p>
+          <p>Dias restantes: 50</p>
           <button class="buy-button" onclick="comprarPlano('${plano.nome}', ${plano.valor}, ${plano.retornoDiario})">Comprar</button>
         `;
         container.appendChild(card);
@@ -171,6 +172,7 @@
             const agora = new Date().getTime();
             const horasRestantes = Math.max(24 - (agora - inv.ultimoRetorno) / (1000 * 60 * 60), 0); // Horas restantes para completar as 24h
 
+            const lucroTotal = inv.retornoDiario * 50; // Lucro total com base em 50 dias
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
@@ -178,6 +180,7 @@
               <img src="1004.png" style="width: 100%; height: auto; border-radius: 8px;">
               <p>Data da compra: ${inv.data}</p>
               <p>Retorno diário: R$${inv.retornoDiario}</p>
+              <p>Lucro total (50 dias): R$${lucroTotal.toFixed(2)}</p>
               <p>Dias restantes: ${inv.diasRestantes}</p>
               <p class="contador">Restante: ${Math.ceil(horasRestantes)} horas</p>
               ${horasRestantes <= 0 && inv.status === "comprado" ? 
