@@ -10,36 +10,39 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
+    // Configuração do Firebase com os dados do seu projeto
     const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "seu-projeto.firebaseapp.com",
-      databaseURL: "https://seu-projeto.firebaseio.com",
-      projectId: "seu-projeto",
-      storageBucket: "seu-projeto.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
+      apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
+      authDomain: "hinvest-f4354.firebaseapp.com",
+      databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
+      projectId: "hinvest-f4354",
+      storageBucket: "hinvest-f4354.firebasestorage.app",
+      messagingSenderId: "646397677016",
+      appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
 
+    // Inicialização do Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    window.salvarRecarga = function(valor) {
+    // Função para salvar a recarga no Firebase
+    function salvarRecarga(valor, status) {
       const recargaRef = ref(database, 'recargas');
       push(recargaRef, {
         valor: valor,
         data: new Date().toLocaleString(),
-        status: 'Pendente'
+        status: status
       }).then(() => {
-        console.log('Recarga enviada!');
+        console.log('Recarga registrada com sucesso no Firebase!');
       }).catch((err) => {
-        console.error('Erro:', err);
+        console.error('Erro ao registrar a recarga no Firebase:', err);
       });
-    };
+    }
   </script>
 
   <style>
     body {
-      background-color: #1a1a1a;
+      background-color: #000000;
       color: #fff;
       font-family: 'Arial', sans-serif;
       margin: 0;
@@ -85,6 +88,39 @@
       margin-top: 20px;
       display: none;
     }
+
+    .opcoes-pagamento {
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+    }
+
+    .opcoes-pagamento button {
+      margin-top: 10px;
+    }
+
+    .pagamento-confirmado {
+      display: none;
+      color: #27ae60;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .termos {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #aaa;
+      text-align: center;
+    }
+
+    .termos a {
+      color: #f39c12;
+      text-decoration: none;
+    }
+
+    .termos a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -112,6 +148,21 @@
       <input type="text" id="linkPagamento" readonly>
       <button onclick="copiarLink()">Copiar Código Pix</button>
     </div>
+
+    <div class="opcoes-pagamento" id="opcoesPagamento">
+      <button onclick="confirmarPagamento()">Confirmar Depósito</button>
+      <button onclick="cancelarPagamento()">Cancelar</button>
+      <button onclick="verificarPagamento()">Verificar Pagamento</button>
+    </div>
+
+    <div class="pagamento-confirmado" id="pagamentoConfirmado">
+      <p>Pagamento Confirmado!</p>
+      <button onclick="continuar()">Continuar</button>
+    </div>
+
+    <div class="termos">
+      <p>Ao continuar, você concorda com os <a href="termos.html" target="_blank">Termos de Uso</a> e a <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a>.</p>
+    </div>
   </div>
 
   <script>
@@ -135,7 +186,8 @@
       if (valor && links[valor]) {
         linkPagamento.value = links[valor];
         document.getElementById("resultado").style.display = "block";
-        salvarRecarga(valor);
+        document.getElementById("opcoesPagamento").style.display = "block";
+        salvarRecarga(valor, 'Pendente');
       } else {
         alert("Selecione um valor válido.");
       }
@@ -146,6 +198,35 @@
       linkPagamento.select();
       document.execCommand("copy");
       alert("Código Pix copiado!");
+    }
+
+    function confirmarPagamento() {
+      document.getElementById("opcoesPagamento").style.display = "none";
+      document.getElementById("pagamentoConfirmado").style.display = "block";
+
+      // Envia o status de "Confirmado" para o Firebase
+      const valor = document.getElementById("valorRecarga").value;
+      salvarRecarga(valor, 'Confirmado');
+    }
+
+    function cancelarPagamento() {
+      document.getElementById("opcoesPagamento").style.display = "none";
+      alert("Recarga cancelada!");
+
+      // Envia o status de "Cancelado" para o Firebase
+      const valor = document.getElementById("valorRecarga").value;
+      salvarRecarga(valor, 'Cancelado');
+    }
+
+    function verificarPagamento() {
+      alert("Verificando pagamento...");
+      // Lógica de verificação do pagamento pode ser inserida aqui
+    }
+
+    function continuar() {
+      alert('Pagamento aprovado e recarga realizada com sucesso!');
+      // Aqui, você pode redirecionar para outra página ou simplesmente mostrar o sucesso
+      // window.location.href = "televisao.html"; // Exemplo de redirecionamento
     }
   </script>
 </body>
