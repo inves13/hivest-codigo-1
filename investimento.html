@@ -83,35 +83,51 @@
       { nome: "Plano Imperador", valor: 1050, retornoDiario: 1050 * 0.05 }
     ];
 
-    // Calculando o rendimento diário e adicionando ao saldo do usuário
-    function calcularRendimentoDiario(userId, investimentoId) {
-      const db = firebase.database();
-      const investimentosRef = db.ref('usuarios/' + userId + '/investimentos/' + investimentoId);
-      investimentosRef.once('value', snapshot => {
-        const investimento = snapshot.val();
-        if (investimento) {
-          const valorInvestido = investimento.valor;
-          const rendimentoDiario = valorInvestido * 0.05;  // Exemplo: 5% de rendimento diário
+    // Função para verificar se 24 horas passaram e adicionar o valor da diária
+    function verificarDiario() {
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const investimentos = data.investimentos || [];
 
-          // Atualizando o saldo do usuário com o rendimento diário
-          const saldoRef = db.ref('usuarios/' + userId + '/saldodaConta');
-          saldoRef.transaction(currentSaldo => {
-            return (currentSaldo || 0) + rendimentoDiario;
-          });
+        investimentos.forEach((inv, index) => {
+          if (inv.status === "comprado") {
+            const tempoAtivacao = new Date(inv.horarioAtivacao).getTime();
+            const tempoAtual = new Date().getTime();
 
-          // Armazenando o rendimento diário no histórico
-          const rendimentosRef = db.ref('usuarios/' + userId + '/rendimentos');
-          rendimentosRef.push({
-            valor: rendimentoDiario,
-            data: new Date().toISOString(),
-            investimentoId: investimentoId
-          });
-        }
+            // Verificar se 24 horas se passaram
+            if (tempoAtual - tempoAtivacao >= 24 * 60 * 60 * 1000) {
+              // Adicionar o valor do rendimento diário à conta do usuário
+              const rendimentoDiario = inv.valor * 0.05;
+
+              // Atualizar o saldo
+              const saldoRef = db.ref('usuarios/' + userId + '/saldodaConta');
+              saldoRef.transaction(currentSaldo => {
+                return (currentSaldo || 0) + rendimentoDiario;
+              });
+
+              // Armazenar o rendimento diário no histórico
+              const rendimentosRef = db.ref('usuarios/' + userId + '/rendimentos');
+              rendimentosRef.push({
+                valor: rendimentoDiario,
+                data: new Date().toISOString(),
+                investimentoId: inv.nome
+              });
+
+              // Atualizar o horário de ativação para o próximo ciclo
+              investimentos[index].horarioAtivacao = new Date().toISOString();
+            }
+          }
+        });
+
+        // Atualizar os investimentos com o novo horário de ativação
+        userRef.update({
+          investimentos: investimentos
+        });
       });
     }
 
-    // Exemplo de como chamar essa função
-    calcularRendimentoDiario('user123', 'investimento456');
+    // Verificar diariamente
+    setInterval(verificarDiario, 60 * 1000);  // Verifica a cada 1 minuto (pode ser ajustado para um intervalo maior)
 
     function carregarPlanos(saldo) {
       const container = document.getElementById("planos");
@@ -160,8 +176,8 @@
           data: new Date().toLocaleDateString(),
           retornoDiario: retornoDiario.toFixed(2),
           diasRestantes: 50,
-          imagem: `imagens/PLANO_${valor}.png`,
-          status: "comprado"  // Novo campo para indicar que o plano foi comprado
+          status: "comprado",  // Novo campo para indicar que o plano foi comprado
+          horarioAtivacao: new Date().toISOString()  // Hora de ativação
         };
 
         investimentos.push(novoInvestimento);
@@ -197,9 +213,11 @@
               <h3>${inv.nome} - R$${inv.valor}</h3>
               <img src="1004.png" style="width: 100%; height: auto; border-radius: 8px;">
               <p>Data da compra: ${inv.data}</p>
+              <p>Retorno diário
               <p>Retorno diário: R$${inv.retornoDiario}</p>
-              <p>Dias restantes: ${inv.diasRestantes}</p>
-              ${inv.status === "comprado" ? '<p class="comprado">Plano comprado!</p>' : ''}
+              <p>Lucro total: R$${(inv.valor * 0.05 * inv.diasRestantes).toFixed(2)}</p>
+              <p>Status: <span class="${inv.status === 'comprado' ? 'comprado' : ''}">${inv.status}</span></p>
+              <button class="buy-button" onclick="cancelarPlano(${index})">Cancelar Plano</button>
             `;
             container.appendChild(card);
           });
@@ -207,7 +225,27 @@
       });
     }
 
-    atualizarSaldo();
+    function cancelarPlano(index) {
+      userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const investimentos = data.investimentos || [];
+
+        investimentos[index].status = "cancelado";
+        userRef.update({
+          investimentos: investimentos
+        }).then(() => {
+          alert("Plano cancelado!");
+          mostrarMeusProdutos();  // Atualiza a lista de produtos
+        });
+      });
+    }
+
+    // Carrega os planos iniciais assim que a página carrega
+    window.onload = function() {
+      atualizarSaldo();
+    };
+
   </script>
+
 </body>
 </html>
