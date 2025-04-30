@@ -221,36 +221,46 @@ function carregarEquipe(meuCodigo) {
 
     document.getElementById("totalEquipe").innerText = totalEquipe;
     document.getElementById("total-bonus").innerText = "R$ " + totalBonus.toFixed(2).replace(".", ",");
-
-    mostrarMembros();
   });
 }
 
+// Função para exibir membros
 function mostrarMembros() {
-  const membrosLista = document.getElementById("membros-lista");
-  membrosLista.innerHTML = "";
-
   db.ref("usuarios").once("value").then(snapshot => {
     const usuarios = snapshot.val();
+    const listaMembros = document.getElementById("membros-lista");
+    listaMembros.innerHTML = ''; // Limpa a lista antes de adicionar novos membros
+
     for (let telefone in usuarios) {
       const user = usuarios[telefone];
-      const membroDiv = document.createElement("div");
-      membroDiv.classList.add("membro");
-      membroDiv.innerHTML = `<strong>${user.nome}</strong><br><span>Telefone: ${user.telefone}</span>`;
-      membrosLista.appendChild(membroDiv);
+      if (user.codigoIndicacao === telefoneLogado) { // Garantir que só membros indicados pelo usuário atual sejam exibidos
+        const divMembro = document.createElement("div");
+        divMembro.className = "membro";
+        divMembro.innerHTML = `Nome: ${user.nome}<br>Telefone: ${user.telefone}`;
+        listaMembros.appendChild(divMembro);
+      }
     }
   });
 }
 
+// Função para copiar o texto
 function copiarTexto(id) {
-  const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto);
+  const el = document.getElementById(id);
+  const range = document.createRange();
+  range.selectNode(el);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  document.execCommand("copy");
+  alert("Texto copiado para a área de transferência!");
 }
 
+// Função para compartilhar via WhatsApp
 function compartilharWhatsApp() {
-  const mensagem = `Eu te convido para entrar no Invest Pix! Cadastre-se usando o link: https://inves13.github.io/hivest-codigo-1/?codigo=${document.getElementById('codigo').innerText}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`);
+  const link = document.getElementById("link").innerText;
+  const url = "https://wa.me/?text=" + encodeURIComponent("Junte-se a mim no HInvest! " + link);
+  window.open(url, "_blank");
 }
+
 </script>
 </body>
 </html>
