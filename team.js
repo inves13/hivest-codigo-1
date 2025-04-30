@@ -17,7 +17,7 @@ function exibirEquipe(usuario) {
       console.log("Código de indicação encontrado:", meuCodigo);
 
       // Busca todos os usuários que se cadastraram com esse código de convite
-      get(ref(db, "usuarios").orderByChild("codigoConvite").equalTo(meuCodigo))
+      get(ref(db, "usuarios").orderByChild("codigoIndicacao").equalTo(meuCodigo))
         .then(snapshot => {
           let totalMembros = 0;
           let totalComissao = 0;
