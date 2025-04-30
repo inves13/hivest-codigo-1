@@ -130,13 +130,45 @@ if (!telefoneLogado) {
   window.location.href = "index.html";
 }
 
+// Função para gerar código único de indicação
+function gerarCodigoUnico() {
+  const contadorRef = db.ref("contadorCodigo");
+
+  // Aumenta o contador sempre que um novo usuário se registra
+  contadorRef.transaction((currentValue) => {
+    return (currentValue || 0) + 1;
+  }).then(() => {
+    db.ref("contadorCodigo").once("value").then(snapshot => {
+      const novoCodigo = snapshot.val();
+      return novoCodigo; // Retorna o novo código para atribuição
+    });
+  });
+}
+
+// Função para cadastrar usuário
+function cadastrarUsuario(nome, telefone, codigoIndicacao) {
+  const novoCodigo = gerarCodigoUnico();
+  
+  const usuarioRef = db.ref("usuarios/" + telefone);
+  usuarioRef.set({
+    nome: nome,
+    telefone: telefone,
+    codigoIndicacao: codigoIndicacao, // O código de indicação do usuário que convidou
+    codigo: novoCodigo // O código único gerado para o novo usuário
+  }).then(() => {
+    console.log("Usuário cadastrado com sucesso!");
+  }).catch(error => {
+    console.error("Erro ao cadastrar usuário:", error);
+  });
+}
+
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
-    document.getElementById("codigo").innerText = user.codigo;
-    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo;
+    document.getElementById("codigo").innerText = user.codigo;  // Exibe o código único gerado
+    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo; // Link único de convite
 
-    carregarEquipe(user.codigo);
+    carregarEquipe(user.codigo);  // Passa o código único para carregar a equipe
   }
 });
 
@@ -190,47 +222,35 @@ function carregarEquipe(meuCodigo) {
     document.getElementById("totalEquipe").innerText = totalEquipe;
     document.getElementById("total-bonus").innerText = "R$ " + totalBonus.toFixed(2).replace(".", ",");
 
-    // Salvar membros para exibição posterior
-    window.membrosLv1 = membrosLv1;
-    window.membrosLv2 = membrosLv2;
-    window.membrosLv3 = membrosLv3;
+    mostrarMembros();
   });
 }
 
 function mostrarMembros() {
-  let listaMembros = "<h3>Membros LV1</h3>";
-  listaMembros += gerarLista(window.membrosLv1);
-  listaMembros += "<h3>Membros LV2</h3>";
-  listaMembros += gerarLista(window.membrosLv2);
-  listaMembros += "<h3>Membros LV3</h3>";
-  listaMembros += gerarLista(window.membrosLv3);
+  const membrosLista = document.getElementById("membros-lista");
+  membrosLista.innerHTML = "";
 
-  document.getElementById("membros-lista").innerHTML = listaMembros;
-}
-
-function gerarLista(membros) {
-  return membros.map(membro => {
-    return `
-      <div class="membro">
-        <strong>${membro.nome}</strong><br>
-        Telefone: ${membro.telefone}<br>
-        Nível: ${membro.codigoIndicacao === telefoneLogado ? "LV1" : membro.codigoIndicacao === membro.codigo ? "LV2" : "LV3"}
-      </div>
-    `;
-  }).join('');
+  db.ref("usuarios").once("value").then(snapshot => {
+    const usuarios = snapshot.val();
+    for (let telefone in usuarios) {
+      const user = usuarios[telefone];
+      const membroDiv = document.createElement("div");
+      membroDiv.classList.add("membro");
+      membroDiv.innerHTML = `<strong>${user.nome}</strong><br><span>Telefone: ${user.telefone}</span>`;
+      membrosLista.appendChild(membroDiv);
+    }
+  });
 }
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => alert("Texto copiado!"));
+  navigator.clipboard.writeText(texto);
 }
 
 function compartilharWhatsApp() {
-  const texto = encodeURIComponent("Junte-se à minha equipe no H Invest! \nLink: " + document.getElementById("link").innerText);
-  const url = `https://wa.me/?text=${texto}`;
-  window.open(url, "_blank");
+  const mensagem = `Eu te convido para entrar no Invest Pix! Cadastre-se usando o link: https://inves13.github.io/hivest-codigo-1/?codigo=${document.getElementById('codigo').innerText}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`);
 }
 </script>
-
 </body>
 </html>
