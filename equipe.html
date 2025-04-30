@@ -204,35 +204,30 @@ function mostrarMembros() {
   listaMembros += gerarLista(window.membrosLv2);
   listaMembros += "<h3>Membros LV3</h3>";
   listaMembros += gerarLista(window.membrosLv3);
-  
+
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
 function gerarLista(membros) {
-  if (membros.length === 0) {
-    return "<p>Nenhum membro encontrado.</p>";
-  }
   return membros.map(membro => {
     return `
       <div class="membro">
-        <p><strong>Nome:</strong> ${membro.nome}</p>
-        <p><strong>Telefone:</strong> ${membro.telefone}</p>
-        <p><strong>Nível:</strong> ${membro.nivel}</p>
+        <strong>${membro.nome}</strong><br>
+        Telefone: ${membro.telefone}<br>
+        Nível: ${membro.codigoIndicacao === telefoneLogado ? "LV1" : membro.codigoIndicacao === membro.codigo ? "LV2" : "LV3"}
       </div>
     `;
-  }).join("");
+  }).join('');
 }
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Texto copiado: " + texto);
-  });
+  navigator.clipboard.writeText(texto).then(() => alert("Texto copiado!"));
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Junte-se ao meu time na H Invest! Link: " + document.getElementById("link").innerText;
-  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+  const texto = encodeURIComponent("Junte-se à minha equipe no H Invest! \nLink: " + document.getElementById("link").innerText);
+  const url = `https://wa.me/?text=${texto}`;
   window.open(url, "_blank");
 }
 </script>
