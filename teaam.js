@@ -1,89 +1,119 @@
-import { auth, database, ref, get, child } from "./firebase-config";
+import { auth, database, ref, get, onAuthStateChanged } from "./firebase-config.js";
 
-// Função para carregar os dados do usuário logado e sua equipe
-function carregarEquipe() {
-  const usuarioLogado = auth.currentUser;
+// Função para exibir os dados da equipe
+function exibirEquipe(usuario) {
+  const uid = usuario.uid;
+  const db = database;
 
-  if (usuarioLogado) {
-    const telefoneLogado = usuarioLogado.phoneNumber;
-
-    // Buscar os dados do usuário logado
-    get(ref(database, "usuarios/" + telefoneLogado)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const usuario = snapshot.val();
-
-        // Exibir dados do usuário logado
-        document.getElementById("nome-usuario").textContent = usuario.nome;
-        document.getElementById("codigo-usuario").textContent = usuario.codigo;
-
-        // Buscar usuários da equipe (indicação)
-        buscarEquipe(usuario.codigo);
-        buscarComissoes(usuario.codigo);
-      } else {
-        console.log("Usuário não encontrado.");
+  // Busca o código de indicação do usuário logado
+  get(ref(db, "usuarios/" + uid + "/codigoIndicacao"))
+    .then(snap => {
+      const meuCodigo = snap.val();
+      if (!meuCodigo) {
+        alert("Código de indicação não encontrado.");
+        return;
       }
-    }).catch((error) => {
-      console.error("Erro ao buscar dados do usuário logado: ", error.message);
+
+      console.log("Código de indicação encontrado:", meuCodigo);
+
+      // Busca todos os usuários que se cadastraram com esse código de convite
+      get(ref(db, "usuarios").orderByChild("codigoConvite").equalTo(meuCodigo))
+        .then(snapshot => {
+          let totalMembros = 0;
+          let totalComissao = 0;
+          let lv1 = { qtd: 0, bonus: 0 };
+          let lv2 = { qtd: 0, bonus: 0 };
+          let lv3 = { qtd: 0, bonus: 0 };
+
+          const lista = document.getElementById("invited-users");
+          lista.innerHTML = ""; // Limpa a lista anterior
+
+          // Verifica se há membros para exibir
+          if (snapshot.exists()) {
+            snapshot.forEach(child => {
+              const dados = child.val();
+              totalMembros++;
+
+              // Pega o valor de investimento do usuário
+              const investimento = parseFloat(dados.investimentos?.valor || 0);
+              console.log(`Investimento de ${dados.nome}: R$ ${investimento}`);
+
+              // A comissão é calculada como 35% do investimento
+              const comissao = investimento * 0.35;
+              console.log(`Comissão para ${dados.nome}: R$ ${comissao.toFixed(2)}`);
+              totalComissao += comissao;
+
+              // Determina o nível do usuário
+              const nivel = dados.nivel || 1;
+              console.log(`Nível de ${dados.nome}: ${nivel}`);
+              if (nivel === 1) {
+                lv1.qtd++;
+                lv1.bonus += comissao;
+              } else if (nivel === 2) {
+                lv2.qtd++;
+                lv2.bonus += comissao;
+              } else if (nivel === 3) {
+                lv3.qtd++;
+                lv3.bonus += comissao;
+              }
+
+              // Criação do item na lista de membros
+              const li = document.createElement("li");
+              li.textContent = `${dados.nome || "Sem nome"} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${comissao.toFixed(2)}`;
+              lista.appendChild(li);
+            });
+          } else {
+            // Caso não tenha usuários, exibe uma mensagem dizendo que o usuário ainda não convidou ninguém
+            const li = document.createElement("li");
+            li.textContent = "Você ainda não convidou ninguém para a sua equipe.";
+            lista.appendChild(li);
+          }
+
+          // Atualiza os totais na interface
+          document.getElementById("lv1-qtd").textContent = `${lv1.qtd} Quantidade efetiva`;
+          document.getElementById("lv1-bonus").textContent = `R$ ${lv1.bonus.toFixed(2).replace('.', ',')} Bônus`;
+          document.getElementById("lv2-qtd").textContent = `${lv2.qtd} Quantidade efetiva`;
+          document.getElementById("lv2-bonus").textContent = `R$ ${lv2.bonus.toFixed(2).replace('.', ',')} Bônus`;
+          document.getElementById("lv3-qtd").textContent = `${lv3.qtd} Quantidade efetiva`;
+          document.getElementById("lv3-bonus").textContent = `R$ ${lv3.bonus.toFixed(2).replace('.', ',')} Bônus`;
+
+          document.getElementById("total-users").textContent = `${totalMembros} usuários convidados`;
+          document.getElementById("total-bonus").textContent = `R$ ${totalComissao.toFixed(2).replace('.', ',')} ganhos totais`;
+        })
+        .catch(error => {
+          console.error("Erro ao recuperar dados da equipe:", error);
+          alert("Erro ao recuperar dados da equipe: " + error.message);
+        });
+    })
+    .catch(error => {
+      console.error("Erro ao buscar seu código de indicação:", error);
+      alert("Erro ao buscar seu código de indicação: " + error.message);
     });
-  } else {
-    alert("Usuário não logado.");
-  }
 }
 
-// Função para buscar os usuários indicados
-function buscarEquipe(codigoIndicado) {
-  get(ref(database, "usuarios")).then((snapshot) => {
-    const equipeList = document.getElementById("equipe-list");
-    equipeList.innerHTML = ""; // Limpa a lista de membros
-
-    let count = 0;
-
-    snapshot.forEach((childSnapshot) => {
-      const user = childSnapshot.val();
-
-      if (user.codigoIndicado === codigoIndicado) {
-        count++;
-        const nome = user.nome;
-        const telefone = user.telefone;
-        const investimento = user.investimento || 0;
-        const li = document.createElement("li");
-        li.textContent = `${nome} - Investiu R$ ${investimento.toFixed(2)}`;
-        equipeList.appendChild(li);
-      }
-    });
-
-    document.getElementById("total-indicados").textContent = `Total de indicados: ${count}`;
-  }).catch((error) => {
-    console.error("Erro ao buscar equipe: ", error.message);
+// Função para copiar texto
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Copiado!");
   });
 }
 
-// Função para calcular e exibir as comissões ganhas
-function buscarComissoes(codigoIndicado) {
-  get(ref(database, "usuarios")).then((snapshot) => {
-    let comissaoTotal = 0;
-
-    snapshot.forEach((childSnapshot) => {
-      const user = childSnapshot.val();
-
-      if (user.codigoIndicado === codigoIndicado) {
-        const investimento = user.investimento || 0;
-        comissaoTotal += investimento * 0.35; // Comissão de 35%
-      }
-    });
-
-    // Exibe o total de comissões
-    document.getElementById("comissao-total").textContent = `Comissões ganhas: R$ ${comissaoTotal.toFixed(2)}`;
-  }).catch((error) => {
-    console.error("Erro ao buscar comissões: ", error.message);
-  });
-}
-
-// Função de login (para garantir que o usuário está logado antes de carregar os dados)
-onAuthStateChanged(auth, (user) => {
+// Verifica se o usuário está logado
+onAuthStateChanged(auth, user => {
   if (user) {
-    carregarEquipe();
+    // Se estiver logado, exibe a equipe
+    exibirEquipe(user);
+
+    // Configuração do código e link de convite
+    const meuCodigo = user.uid; // O código de indicação pode ser o UID do usuário logado
+    const meuLink = `https://seusite.com/registro?codigo=${meuCodigo}`;
+
+    document.getElementById("invite-code").textContent = meuCodigo;
+    document.getElementById("invite-link").textContent = meuLink;
+
   } else {
-    alert("Usuário não está logado.");
+    // Se não estiver logado, manda para tela de login
+    window.location.href = "index.html";
   }
 });
