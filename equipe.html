@@ -251,16 +251,14 @@ function copiarTexto(id) {
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
   document.execCommand("copy");
-  alert("Texto copiado para a área de transferência!");
+  alert("Texto copiado!");
 }
 
-// Função para compartilhar via WhatsApp
+// Função de compartilhamento no WhatsApp
 function compartilharWhatsApp() {
-  const link = document.getElementById("link").innerText;
-  const url = "https://wa.me/?text=" + encodeURIComponent("Junte-se a mim no HInvest! " + link);
-  window.open(url, "_blank");
+  const texto = document.getElementById("link").innerText;
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
 }
-
 </script>
 </body>
 </html>
