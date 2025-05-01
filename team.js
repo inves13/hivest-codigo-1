@@ -36,13 +36,16 @@ function exibirEquipe(usuario) {
 
               // Pega o valor de investimento do usuário
               const investimento = parseFloat(dados.investimentos?.valor || 0);
+              console.log(`Investimento de ${dados.nome}: R$ ${investimento}`);
 
               // A comissão é calculada como 35% do investimento
               const comissao = investimento * 0.35;
+              console.log(`Comissão para ${dados.nome}: R$ ${comissao.toFixed(2)}`);
               totalComissao += comissao;
 
               // Determina o nível do usuário
               const nivel = dados.nivel || 1;
+              console.log(`Nível de ${dados.nome}: ${nivel}`);
               if (nivel === 1) {
                 lv1.qtd++;
                 lv1.bonus += comissao;
