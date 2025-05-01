@@ -254,11 +254,14 @@ function copiarTexto(id) {
   alert("Texto copiado!");
 }
 
-// Função de compartilhamento no WhatsApp
+// Função para compartilhar no WhatsApp
 function compartilharWhatsApp() {
-  const texto = document.getElementById("link").innerText;
-  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+  const link = document.getElementById("link").innerText;
+  const message = "Convite para investir na plataforma HInvest: " + link;
+  const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
 }
 </script>
+
 </body>
 </html>
