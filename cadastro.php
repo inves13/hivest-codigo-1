@@ -29,7 +29,7 @@ $stmt->bind_param("ssss", $nome, $telefone, $senha, $codigo);
 if ($stmt->execute()) {
     // Se houver indicação, adicionar à equipe do patrocinador
     if (!empty($indicacao)) {
-        $stmt2 = $conn->prepare("INSERT INTO indicacoes (codigo_patrocinador, indicado) VALUES (?, ?)");
+        $stmt2 = $conn->prepare("INSERT INTO indicacoes (codigo_patrocinador, telefone_indicado) VALUES (?, ?)");
         $stmt2->bind_param("ss", $indicacao, $telefone);
         $stmt2->execute();
     }
