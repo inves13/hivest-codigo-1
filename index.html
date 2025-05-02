@@ -59,6 +59,7 @@
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
@@ -98,6 +99,7 @@
       appId: "1:646397677016:web:f05ca27a38439568bff6ad"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -184,16 +186,15 @@
 
     function recuperarSenha() {
       const email = prompt("Digite seu e-mail cadastrado:");
+
       if (email) {
-        db.ref("usuarios").orderByChild("email").equalTo(email).once("value").then(snapshot => {
-          if (snapshot.exists()) {
-            const user = snapshot.val();
-            const telefone = Object.keys(user)[0];
-            alert("Sua senha cadastrada é: " + user[telefone].senha);
-          } else {
-            alert("E-mail não encontrado.");
-          }
-        });
+        auth.sendPasswordResetEmail(email)
+          .then(() => {
+            alert("Link para redefinir a senha foi enviado para o seu e-mail.");
+          })
+          .catch((error) => {
+            alert("Erro: " + error.message);
+          });
       }
     }
   </script>
