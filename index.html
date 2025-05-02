@@ -60,7 +60,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
   <div class="form-box">
@@ -71,6 +70,7 @@
     <form id="cadastro-form">
       <input type="text" id="cadastro-nome" placeholder="Nome completo" required />
       <input type="text" id="cadastro-telefone" placeholder="Telefone (somente números)" required />
+      <input type="email" id="cadastro-email" placeholder="E-mail" required />
       <input type="password" id="cadastro-senha" placeholder="Senha" required />
       <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
       <button type="submit">Cadastrar</button>
@@ -99,7 +99,6 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth();
 
     const urlParams = new URLSearchParams(window.location.search);
     const codigoIndicado = urlParams.get("codigo");
@@ -111,10 +110,11 @@
       e.preventDefault();
       const nome = document.getElementById("cadastro-nome").value.trim();
       const telefone = document.getElementById("cadastro-telefone").value.trim();
+      const email = document.getElementById("cadastro-email").value.trim();
       const senha = document.getElementById("cadastro-senha").value.trim();
       const codigoIndicacao = document.getElementById("cadastro-codigo").value.trim() || null;
 
-      if (!nome || !telefone || !senha) {
+      if (!nome || !telefone || !email || !senha) {
         alert("Preencha todos os campos obrigatórios.");
         return;
       }
@@ -134,6 +134,8 @@
 
             db.ref("usuarios/" + telefone).set({
               nome,
+              telefone,
+              email,
               senha,
               saldo: 20,
               renda: 0,
@@ -181,17 +183,16 @@
     });
 
     function recuperarSenha() {
-      const email = prompt("Digite seu e-mail cadastrado:");
-      if (email) {
-        auth.sendPasswordResetEmail(email)
-          .then(() => {
-            alert("Um e-mail de recuperação foi enviado para " + email);
-          })
-          .catch((error) => {
-            alert("Erro ao enviar o e-mail: " + error.message);
-          });
-      } else {
-        alert("E-mail não informado.");
+      const telefone = prompt("Digite seu telefone cadastrado:");
+      if (telefone) {
+        db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+          if (snapshot.exists()) {
+            const user = snapshot.val();
+            alert("Sua senha cadastrada é: " + user.senha);
+          } else {
+            alert("Telefone não encontrado.");
+          }
+        });
       }
     }
   </script>
