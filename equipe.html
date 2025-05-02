@@ -58,26 +58,21 @@
       margin-bottom: 8px;
     }
   </style>
-
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-
 <div class="box">
   <div class="label">Código de Convite</div>
   <div class="linha">
     <span id="codigo">Carregando...</span>
     <button onclick="copiarTexto('codigo')">Copiar</button>
   </div>
-
   <div class="label">Link de convite</div>
   <div class="linha">
     <span id="link">Carregando...</span>
     <button onclick="copiarTexto('link')">Copiar</button>
   </div>
-
   <div class="linha">
     <strong>Compartilhar</strong>
     <button onclick="compartilharWhatsApp()">WhatsApp</button>
@@ -103,10 +98,7 @@
   <div class="linha"><strong>Número de equipe</strong><span id="totalEquipe">0</span></div>
   <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
 
-  <!-- Botão para exibir membros -->
   <button onclick="mostrarMembros()">Ver Membros da Equipe</button>
-
-  <!-- Lista de membros -->
   <div id="membros-lista"></div>
 </div>
 
@@ -120,55 +112,20 @@ const firebaseConfig = {
   messagingSenderId: "646397677016",
   appId: "1:646397677016:web:f05ca27a38439568bff6ad"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const telefoneLogado = localStorage.getItem("telefoneLogado");
-
 if (!telefoneLogado) {
   window.location.href = "index.html";
-}
-
-// Função para gerar código único de indicação
-function gerarCodigoUnico() {
-  const contadorRef = db.ref("contadorCodigo");
-
-  // Aumenta o contador sempre que um novo usuário se registra
-  contadorRef.transaction((currentValue) => {
-    return (currentValue || 0) + 1;
-  }).then(() => {
-    db.ref("contadorCodigo").once("value").then(snapshot => {
-      const novoCodigo = snapshot.val();
-      return novoCodigo; // Retorna o novo código para atribuição
-    });
-  });
-}
-
-// Função para cadastrar usuário
-function cadastrarUsuario(nome, telefone, codigoIndicacao) {
-  const novoCodigo = gerarCodigoUnico();
-  
-  const usuarioRef = db.ref("usuarios/" + telefone);
-  usuarioRef.set({
-    nome: nome,
-    telefone: telefone,
-    codigoIndicacao: codigoIndicacao, // O código de indicação do usuário que convidou
-    codigo: novoCodigo // O código único gerado para o novo usuário
-  }).then(() => {
-    console.log("Usuário cadastrado com sucesso!");
-  }).catch(error => {
-    console.error("Erro ao cadastrar usuário:", error);
-  });
 }
 
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
-    document.getElementById("codigo").innerText = user.codigo;  // Exibe o código único gerado
-    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo; // Link único de convite
-
-    carregarEquipe(user.codigo);  // Passa o código único para carregar a equipe
+    document.getElementById("codigo").innerText = user.codigo;
+    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo;
+    carregarEquipe(user.codigo);
   }
 });
 
@@ -184,21 +141,19 @@ function carregarEquipe(meuCodigo) {
       const user1 = usuarios[telefone1];
       if (user1.codigoIndicacao === meuCodigo) {
         lv1++;
-        bonus1 += 20 * 0.26; // 26% de R$20
+        bonus1 += 20 * 0.26;
         membrosLv1.push(user1);
-
         for (let telefone2 in usuarios) {
           const user2 = usuarios[telefone2];
           if (user2.codigoIndicacao === user1.codigo) {
             lv2++;
-            bonus2 += 20 * 0.01; // 1% de R$20
+            bonus2 += 20 * 0.01;
             membrosLv2.push(user2);
-
             for (let telefone3 in usuarios) {
               const user3 = usuarios[telefone3];
               if (user3.codigoIndicacao === user2.codigo) {
                 lv3++;
-                bonus3 += 20 * 0.01; // 1% de R$20
+                bonus3 += 20 * 0.01;
                 membrosLv3.push(user3);
               }
             }
@@ -212,56 +167,52 @@ function carregarEquipe(meuCodigo) {
 
     document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
     document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
-
     document.getElementById("lv2-qtd").innerText = lv2 + " Quantidade efetiva";
     document.getElementById("lv2-bonus").innerText = "R$ " + bonus2.toFixed(2).replace(".", ",");
-
     document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
     document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
 
     document.getElementById("totalEquipe").innerText = totalEquipe;
     document.getElementById("total-bonus").innerText = "R$ " + totalBonus.toFixed(2).replace(".", ",");
+
+    window.membrosLv1 = membrosLv1;
+    window.membrosLv2 = membrosLv2;
+    window.membrosLv3 = membrosLv3;
   });
 }
 
-// Função para exibir membros
 function mostrarMembros() {
-  db.ref("usuarios").once("value").then(snapshot => {
-    const usuarios = snapshot.val();
-    const listaMembros = document.getElementById("membros-lista");
-    listaMembros.innerHTML = ''; // Limpa a lista antes de adicionar novos membros
+  let listaMembros = "<h3>Membros LV1</h3>" + gerarLista(window.membrosLv1);
+  listaMembros += "<h3>Membros LV2</h3>" + gerarLista(window.membrosLv2);
+  listaMembros += "<h3>Membros LV3</h3>" + gerarLista(window.membrosLv3);
+  document.getElementById("membros-lista").innerHTML = listaMembros;
+}
 
-    for (let telefone in usuarios) {
-      const user = usuarios[telefone];
-      if (user.codigoIndicacao === telefoneLogado) { // Garantir que só membros indicados pelo usuário atual sejam exibidos
-        const divMembro = document.createElement("div");
-        divMembro.className = "membro";
-        divMembro.innerHTML = `Nome: ${user.nome}<br>Telefone: ${user.telefone}`;
-        listaMembros.appendChild(divMembro);
-      }
-    }
+function gerarLista(membros) {
+  if (membros.length === 0) {
+    return "<p>Nenhum membro encontrado.</p>";
+  }
+  return membros.map(membro => `
+    <div class="membro">
+      <p><strong>Nome:</strong> ${membro.nome}</p>
+      <p><strong>Telefone:</strong> ${membro.telefone}</p>
+      <p><strong>Nível:</strong> ${membro.nivel || 'Não definido'}</p>
+    </div>
+  `).join("");
+}
+
+function copiarTexto(id) {
+  const texto = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Texto copiado: " + texto);
   });
 }
 
-// Função para copiar o texto
-function copiarTexto(id) {
-  const el = document.getElementById(id);
-  const range = document.createRange();
-  range.selectNode(el);
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-  document.execCommand("copy");
-  alert("Texto copiado!");
-}
-
-// Função para compartilhar no WhatsApp
 function compartilharWhatsApp() {
-  const link = document.getElementById("link").innerText;
-  const message = "Convite para investir na plataforma HInvest: " + link;
-  const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
+  const mensagem = "Junte-se ao meu time na H Invest! Link: " + document.getElementById("link").innerText;
+  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+  window.open(url, "_blank");
 }
 </script>
-
 </body>
 </html>
