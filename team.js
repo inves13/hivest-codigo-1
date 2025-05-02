@@ -28,46 +28,35 @@ function exibirEquipe(usuario) {
           const lista = document.getElementById("invited-users");
           lista.innerHTML = ""; // Limpa a lista anterior
 
-          // Verifica se há membros para exibir
-          if (snapshot.exists()) {
-            snapshot.forEach(child => {
-              const dados = child.val();
-              totalMembros++;
+          snapshot.forEach(child => {
+            const dados = child.val();
+            totalMembros++;
 
-              // Pega o valor de investimento do usuário
-              const investimento = parseFloat(dados.investimentos?.valor || 0);
-              console.log(`Investimento de ${dados.nome}: R$ ${investimento}`);
+            // Pega o valor de investimento do usuário
+            const investimento = parseFloat(dados.investimentos?.valor || 0);
 
-              // A comissão é calculada como 35% do investimento
-              const comissao = investimento * 0.35;
-              console.log(`Comissão para ${dados.nome}: R$ ${comissao.toFixed(2)}`);
-              totalComissao += comissao;
+            // A comissão é calculada como 35% do investimento
+            const comissao = investimento * 0.35;
+            totalComissao += comissao;
 
-              // Determina o nível do usuário
-              const nivel = dados.nivel || 1;
-              console.log(`Nível de ${dados.nome}: ${nivel}`);
-              if (nivel === 1) {
-                lv1.qtd++;
-                lv1.bonus += comissao;
-              } else if (nivel === 2) {
-                lv2.qtd++;
-                lv2.bonus += comissao;
-              } else if (nivel === 3) {
-                lv3.qtd++;
-                lv3.bonus += comissao;
-              }
+            // Determina o nível do usuário
+            const nivel = dados.nivel || 1;
+            if (nivel === 1) {
+              lv1.qtd++;
+              lv1.bonus += comissao;
+            } else if (nivel === 2) {
+              lv2.qtd++;
+              lv2.bonus += comissao;
+            } else if (nivel === 3) {
+              lv3.qtd++;
+              lv3.bonus += comissao;
+            }
 
-              // Criação do item na lista de membros
-              const li = document.createElement("li");
-              li.textContent = `${dados.nome || "Sem nome"} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${comissao.toFixed(2)}`;
-              lista.appendChild(li);
-            });
-          } else {
-            // Caso não tenha usuários, exibe uma mensagem dizendo que o usuário ainda não convidou ninguém
+            // Criação do item na lista de membros
             const li = document.createElement("li");
-            li.textContent = "Você ainda não convidou ninguém para a sua equipe.";
+            li.textContent = `${dados.nome || "Sem nome"} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${comissao.toFixed(2)}`;
             lista.appendChild(li);
-          }
+          });
 
           // Atualiza os totais na interface
           document.getElementById("lv1-qtd").textContent = `${lv1.qtd} Quantidade efetiva`;
