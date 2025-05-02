@@ -183,14 +183,15 @@
     });
 
     function recuperarSenha() {
-      const telefone = prompt("Digite seu telefone cadastrado:");
-      if (telefone) {
-        db.ref("usuarios/" + telefone).once("value").then(snapshot => {
+      const email = prompt("Digite seu e-mail cadastrado:");
+      if (email) {
+        db.ref("usuarios").orderByChild("email").equalTo(email).once("value").then(snapshot => {
           if (snapshot.exists()) {
             const user = snapshot.val();
-            alert("Sua senha cadastrada é: " + user.senha);
+            const telefone = Object.keys(user)[0];
+            alert("Sua senha cadastrada é: " + user[telefone].senha);
           } else {
-            alert("Telefone não encontrado.");
+            alert("E-mail não encontrado.");
           }
         });
       }
