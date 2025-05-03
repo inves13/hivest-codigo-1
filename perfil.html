@@ -119,6 +119,9 @@
     <label for="telefone_usuario">Número de Telefone</label>
     <input type="text" id="telefone_usuario" name="telefone_usuario" placeholder="Número de Telefone" readonly>
 
+    <label for="email_usuario">E-mail</label>
+    <input type="email" id="email_usuario" name="email_usuario" placeholder="E-mail" readonly>
+
     <label for="data_nascimento">Data de Nascimento</label>
     <input type="date" id="data_nascimento" name="data_nascimento" onchange="salvarDados()">
 
@@ -175,13 +178,14 @@
       window.location.href = "index.html"; // Redireciona para a página de cadastro e login
     }
 
-    // Carregar dados do usuário, como foto, nome, etc., do Firebase
+    // Carregar dados do usuário, como foto, nome, e-mail, etc., do Firebase
     const usuarioRef = database.ref('usuarios/' + telefone);
     usuarioRef.once('value', (snapshot) => {
       const dados = snapshot.val();
       if (dados) {
         document.getElementById("nome_completo").value = dados.nome_completo;
         document.getElementById("sobrenome").value = dados.sobrenome;
+        document.getElementById("email_usuario").value = dados.email;  // Preencher e-mail automaticamente
         document.getElementById("cep").value = dados.cep;
         document.getElementById("cidade").value = dados.cidade;
         document.getElementById("bairro").value = dados.bairro;
@@ -220,6 +224,7 @@
     if (telefone) {
       const nome_completo = document.getElementById("nome_completo").value;
       const sobrenome = document.getElementById("sobrenome").value;
+      const email = document.getElementById("email_usuario").value;  // Valor do e-mail
       const cep = document.getElementById("cep").value;
       const cidade = document.getElementById("cidade").value;
       const bairro = document.getElementById("bairro").value;
@@ -231,6 +236,7 @@
       usuarioRef.update({
         nome_completo: nome_completo,
         sobrenome: sobrenome,
+        email: email,  // Atualizando e-mail
         cep: cep,
         cidade: cidade,
         bairro: bairro,
