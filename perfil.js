@@ -11,7 +11,7 @@ function carregarUsuario() {
     if (user) {
         // A partir do Firebase, você pode pegar o telefone ou o ID do usuário
         const usuarioId = user.uid;  // UID único do usuário no Firebase
-        document.getElementById("telefone").textContent = "ID: " + usuarioId;
+        document.getElementById("usuarioId").textContent = "ID: " + usuarioId;
 
         // Também podemos salvar o número do telefone ou dados adicionais no Firebase
         const userRef = ref(getDatabase(), 'usuarios/' + usuarioId);
@@ -19,16 +19,20 @@ function carregarUsuario() {
             const userData = snapshot.val();
             if (userData && userData.telefone) {
                 document.getElementById("telefone").textContent = "Telefone: " + userData.telefone;
+            } else {
+                document.getElementById("telefone").textContent = "Telefone não encontrado";
             }
         }).catch((error) => {
             console.error("Erro ao carregar dados do usuário:", error);
+            document.getElementById("telefone").textContent = "Erro ao carregar telefone";
         });
     } else {
-        document.getElementById("telefone").textContent = "Usuário não logado";
+        document.getElementById("usuarioId").textContent = "Usuário não logado";
+        document.getElementById("telefone").textContent = "Telefone não disponível";
     }
 }
 
-// Carregar saldo da conta (R$22.00) do Firebase
+// Carregar saldo da conta do Firebase
 function carregarSaldo() {
     const user = auth.currentUser;
     if (user) {
@@ -39,15 +43,11 @@ function carregarSaldo() {
             document.getElementById("saldo").textContent = "R$ " + parseFloat(saldo).toFixed(2);
         }).catch((error) => {
             console.error("Erro ao carregar saldo:", error);
+            document.getElementById("saldo").textContent = "Erro ao carregar saldo";
         });
     } else {
         document.getElementById("saldo").textContent = "R$ 0.00"; // Caso o usuário não esteja logado
     }
-}
-
-// Função para redirecionar para outra página
-function irPara(pagina) {
-    window.location.href = pagina;
 }
 
 // Função de logout (remove o usuário autenticado)
@@ -61,8 +61,19 @@ function logout() {
     });
 }
 
-// Carregar os dados quando a página abrir
-window.onload = () => {
-    carregarUsuario();
-    carregarSaldo();
-};
+// Função para redirecionar para outra página
+function irPara(pagina) {
+    window.location.href = pagina;
+}
+
+// Verifica se o usuário está logado e chama as funções de carregar dados
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Usuário logado, carrega as informações
+        carregarUsuario();
+        carregarSaldo();
+    } else {
+        // Usuário não logado, redireciona para a página de login
+        window.location.href = 'login.html';
+    }
+});
