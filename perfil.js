@@ -13,39 +13,36 @@ function carregarUsuario() {
         const usuarioId = user.uid;  // UID único do usuário no Firebase
         document.getElementById("usuarioId").textContent = "ID: " + usuarioId;
 
-        // Também podemos salvar o número do telefone ou dados adicionais no Firebase
+        // Referência ao usuário no Firebase para pegar dados adicionais
         const userRef = ref(getDatabase(), 'usuarios/' + usuarioId);
         get(userRef).then((snapshot) => {
             const userData = snapshot.val();
-            if (userData && userData.telefone) {
-                document.getElementById("telefone").textContent = "Telefone: " + userData.telefone;
+            if (userData) {
+                // Carregar o nome completo e outros dados do usuário
+                const nomeCompleto = userData.nome_completo ? userData.nome_completo : "Nome não disponível";
+                document.getElementById("nome_completo").value = nomeCompleto;
+
+                // Carregar sobrenome e separar do nome completo
+                const sobrenome = nomeCompleto.split(' ').slice(-1).join(' ');
+                document.getElementById("sobrenome").value = sobrenome;
+
+                // Carregar telefone
+                const telefone = userData.telefone ? userData.telefone : "Telefone não encontrado";
+                document.getElementById("telefone").textContent = "Telefone: " + telefone;
+
+                // Carregar saldo
+                let saldo = userData.saldo ? userData.saldo : 0;
+                document.getElementById("saldo").textContent = "R$ " + parseFloat(saldo).toFixed(2);
+
             } else {
-                document.getElementById("telefone").textContent = "Telefone não encontrado";
+                console.log("Dados do usuário não encontrados.");
             }
         }).catch((error) => {
             console.error("Erro ao carregar dados do usuário:", error);
-            document.getElementById("telefone").textContent = "Erro ao carregar telefone";
         });
     } else {
         document.getElementById("usuarioId").textContent = "Usuário não logado";
         document.getElementById("telefone").textContent = "Telefone não disponível";
-    }
-}
-
-// Carregar saldo da conta do Firebase
-function carregarSaldo() {
-    const user = auth.currentUser;
-    if (user) {
-        const userRef = ref(getDatabase(), 'usuarios/' + user.uid);
-        get(userRef).then((snapshot) => {
-            const userData = snapshot.val();
-            let saldo = userData ? userData.saldo : 0;
-            document.getElementById("saldo").textContent = "R$ " + parseFloat(saldo).toFixed(2);
-        }).catch((error) => {
-            console.error("Erro ao carregar saldo:", error);
-            document.getElementById("saldo").textContent = "Erro ao carregar saldo";
-        });
-    } else {
         document.getElementById("saldo").textContent = "R$ 0.00"; // Caso o usuário não esteja logado
     }
 }
@@ -71,7 +68,6 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         // Usuário logado, carrega as informações
         carregarUsuario();
-        carregarSaldo();
     } else {
         // Usuário não logado, redireciona para a página de login
         window.location.href = 'login.html';
