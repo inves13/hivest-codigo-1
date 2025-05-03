@@ -61,18 +61,6 @@
       width: 80px;
       margin-left: auto;
     }
-    .servicos {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      text-align: center;
-    }
-    .servicos div {
-      background-color: #333;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
     .form-perfil {
       margin-top: 20px;
       display: flex;
@@ -89,6 +77,28 @@
     .form-perfil label {
       font-weight: bold;
     }
+
+    /* Estilo do Terço */
+    .terco {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 5px;
+      color: white;
+      font-size: 18px;
+      text-align: center;
+    }
+    .terco button {
+      padding: 10px 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .terco button:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
@@ -98,8 +108,8 @@
   <div class="perfil">
     <img id="fotoPerfil" src="10017.png" alt="Foto de Perfil">
     <div class="perfil-info">
-      <h3>Hivest</h3>
-      <p id="telefone">ID: Não disponível</p> <!-- Alteração aqui -->
+      <h3 id="nomeCompleto">Hivest</h3>
+      <p id="telefone">ID: Não disponível</p>
     </div>
     <!-- Botão de Logout -->
     <div class="logout" onclick="logout()">Sair</div>
@@ -143,17 +153,10 @@
     <button onclick="salvarDados()">Salvar Dados</button>
   </div>
 
-  <!-- Serviços -->
-  <h3>Meus serviços</h3>
-  <div class="servicos">
-    <div onclick="irPara('sobre.html')">ℹ️ <br> Sobre nós</div>
-    <div onclick="irPara('regras.html')">📜 <br> Regras</div>
-    <div onclick="irPara('registros_conta.html')">📄 <br> Registros</div>
-    <div onclick="irPara('ajuda.html')">🎧 <br> Ajuda</div>
-    <div onclick="irPara('download.html')">⬇️ <br> Download</div>
-    <div onclick="irPara('saque.html')">💳 <br> Conta PIX</div>
-    <div onclick="irPara('senha.html')">🔒 <br> Senha</div>
-    <div onclick="irPara('presente.htm')">🎁 <br> Resgatar presentes</div>
+  <!-- Terço -->
+  <div class="terco">
+    <h3>Terço - Reze conosco</h3>
+    <button onclick="rezar()">Rezar</button>
   </div>
 </div>
 
@@ -171,7 +174,7 @@
   function carregarUsuario() {
     const telefone = localStorage.getItem("telefoneLogado");
     if (telefone) {
-      document.getElementById("telefone").textContent = "ID: " + telefone;  // Alteração aqui
+      document.getElementById("telefone").textContent = "ID: " + telefone;
       document.getElementById("telefone_usuario").value = telefone;  // Preenche o campo com o telefone
     } else {
       alert("Nenhum telefone logado. Faça login novamente.");
@@ -183,15 +186,23 @@
     usuarioRef.once('value', (snapshot) => {
       const dados = snapshot.val();
       if (dados) {
-        document.getElementById("nome_completo").value = dados.nome_completo;
-        document.getElementById("sobrenome").value = dados.sobrenome;
-        document.getElementById("email_usuario").value = dados.email;  // Preencher e-mail automaticamente
-        document.getElementById("cep").value = dados.cep;
-        document.getElementById("cidade").value = dados.cidade;
-        document.getElementById("bairro").value = dados.bairro;
-        document.getElementById("endereco").value = dados.endereco;
-        document.getElementById("rua").value = dados.rua;
-        document.getElementById("data_nascimento").value = dados.data_nascimento; // Preencher data de nascimento
+        // Preencher nome completo e sobrenome corretamente
+        const nomeCompleto = dados.nome.split(" ");
+        const nome = nomeCompleto[0];
+        const sobrenome = nomeCompleto.slice(1).join(" ");
+        
+        document.getElementById("nomeCompleto").textContent = nome; // Exibe nome completo no título do perfil
+        document.getElementById("nome_completo").value = nome || "Nome não disponível"; 
+        document.getElementById("sobrenome").value = sobrenome || '';  // Preencher sobrenome
+        
+        document.getElementById("email_usuario").value = dados.email || '';  // Preencher e-mail automaticamente
+        document.getElementById("cep").value = dados.cep || '';
+        document.getElementById("cidade").value = dados.cidade || '';
+        document.getElementById("bairro").value = dados.bairro || '';
+        document.getElementById("endereco").value = dados.endereco || '';
+        document.getElementById("rua").value = dados.rua || '';
+        document.getElementById("data_nascimento").value = dados.data_nascimento || ''; // Preencher data de nascimento
+
         // Se houver foto salva
         if (dados.foto) {
           document.getElementById("fotoPerfil").src = dados.foto;
@@ -201,54 +212,53 @@
   }
 
   function atualizarFoto() {
-    const foto = document.getElementById('foto').files[0];
+    const foto = document.getElementById("foto").files[0];
     if (foto) {
       const reader = new FileReader();
-      reader.onloadend = function () {
-        const fotoUrl = reader.result;
-        document.getElementById("fotoPerfil").src = fotoUrl;
-
-        // Salvar foto no Firebase
-        const telefone = localStorage.getItem("telefoneLogado");
-        if (telefone) {
-          const usuarioRef = database.ref('usuarios/' + telefone);
-          usuarioRef.update({ foto: fotoUrl });
-        }
+      reader.onloadend = function() {
+        document.getElementById("fotoPerfil").src = reader.result;
+        salvarDados(); // Salvar a foto no Firebase
       };
       reader.readAsDataURL(foto);
     }
   }
 
   function salvarDados() {
-    const telefone = localStorage.getItem("telefoneLogado");
-    if (telefone) {
-      const nome_completo = document.getElementById("nome_completo").value;
-      const sobrenome = document.getElementById("sobrenome").value;
-      const email = document.getElementById("email_usuario").value;  // Valor do e-mail
-      const cep = document.getElementById("cep").value;
-      const cidade = document.getElementById("cidade").value;
-      const bairro = document.getElementById("bairro").value;
-      const endereco = document.getElementById("endereco").value;
-      const rua = document.getElementById("rua").value;
-      const data_nascimento = document.getElementById("data_nascimento").value;
+    const telefone = document.getElementById("telefone_usuario").value;
+    const nome_completo = document.getElementById("nome_completo").value;
+    const sobrenome = document.getElementById("sobrenome").value;
+    const email = document.getElementById("email_usuario").value;
+    const data_nascimento = document.getElementById("data_nascimento").value;
+    const cep = document.getElementById("cep").value;
+    const cidade = document.getElementById("cidade").value;
+    const bairro = document.getElementById("bairro").value;
+    const endereco = document.getElementById("endereco").value;
+    const rua = document.getElementById("rua").value;
+    const foto = document.getElementById("fotoPerfil").src;
 
-      const usuarioRef = database.ref('usuarios/' + telefone);
-      usuarioRef.update({
-        nome_completo: nome_completo,
-        sobrenome: sobrenome,
-        email: email,  // Atualizando e-mail
-        cep: cep,
-        cidade: cidade,
-        bairro: bairro,
-        endereco: endereco,
-        rua: rua,
-        data_nascimento: data_nascimento
-      });
-    }
+    const usuarioRef = database.ref('usuarios/' + telefone);
+    usuarioRef.set({
+      nome_completo,
+      sobrenome,
+      email,
+      data_nascimento,
+      cep,
+      cidade,
+      bairro,
+      endereco,
+      rua,
+      foto
+    });
+
+    alert("Dados atualizados com sucesso!");
   }
 
+  function rezar() {
+    alert("Reze com fé!");
+  }
+
+  // Carregar as informações do usuário ao carregar a página
   window.onload = carregarUsuario;
 </script>
-
 </body>
 </html>
