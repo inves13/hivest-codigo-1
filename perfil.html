@@ -99,7 +99,7 @@
     <img id="fotoPerfil" src="10017.png" alt="Foto de Perfil">
     <div class="perfil-info">
       <h3>Hivest</h3>
-      <p id="telefone">Telefone: Não disponível</p>
+      <p id="telefone">ID: Não disponível</p> <!-- Alteração aqui -->
     </div>
     <!-- Botão de Logout -->
     <div class="logout" onclick="logout()">Sair</div>
@@ -168,7 +168,7 @@
   function carregarUsuario() {
     const telefone = localStorage.getItem("telefoneLogado");
     if (telefone) {
-      document.getElementById("telefone").textContent = "Telefone: " + telefone;
+      document.getElementById("telefone").textContent = "ID: " + telefone;  // Alteração aqui
       document.getElementById("telefone_usuario").value = telefone;  // Preenche o campo com o telefone
     } else {
       alert("Nenhum telefone logado. Faça login novamente.");
@@ -227,7 +227,6 @@
       const rua = document.getElementById("rua").value;
       const data_nascimento = document.getElementById("data_nascimento").value;
 
-      // Atualizar dados no Firebase
       const usuarioRef = database.ref('usuarios/' + telefone);
       usuarioRef.update({
         nome_completo: nome_completo,
@@ -239,12 +238,9 @@
         rua: rua,
         data_nascimento: data_nascimento
       });
-
-      alert("Dados salvos com sucesso!");
     }
   }
 
-  // Carregar os dados do usuário ao iniciar a página
   window.onload = carregarUsuario;
 </script>
 
