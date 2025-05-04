@@ -78,25 +78,22 @@
       font-weight: bold;
     }
 
-    /* Estilo do Terço */
-    .terco {
+    /* Estilo dos Serviços */
+    .servicos {
       margin-top: 30px;
-      padding: 20px;
-      background-color: #333;
-      border-radius: 5px;
-      color: white;
-      font-size: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       text-align: center;
     }
-    .terco button {
-      padding: 10px 20px;
+    .servicos div {
+      padding: 10px;
       background-color: #444;
-      color: white;
-      border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.3s;
     }
-    .terco button:hover {
+    .servicos div:hover {
       background-color: #555;
     }
   </style>
@@ -153,10 +150,17 @@
     <button onclick="salvarDados()">Salvar Dados</button>
   </div>
 
-  <!-- Terço -->
-  <div class="terco">
-    <h3>Terço - Reze conosco</h3>
-    <button onclick="rezar()">Rezar</button>
+  <!-- Serviços -->
+  <h3>Meus serviços</h3>
+  <div class="servicos">
+    <div onclick="irPara('sobre.html')">ℹ️ <br> Sobre nós</div>
+    <div onclick="irPara('regras.html')">📜 <br> Regras</div>
+    <div onclick="irPara('registros_conta.html')">📄 <br> Registros</div>
+    <div onclick="irPara('ajuda.html')">🎧 <br> Ajuda</div>
+    <div onclick="irPara('download.html')">⬇️ <br> Download</div>
+    <div onclick="irPara('saque.html')">💳 <br> Conta PIX</div>
+    <div onclick="irPara('senha.html')">🔒 <br> Senha</div>
+    <div onclick="irPara('presente.htm')">🎁 <br> Resgatar presentes</div>
   </div>
 </div>
 
@@ -251,10 +255,6 @@
     });
 
     alert("Dados atualizados com sucesso!");
-  }
-
-  function rezar() {
-    alert("Reze com fé!");
   }
 
   // Carregar as informações do usuário ao carregar a página
