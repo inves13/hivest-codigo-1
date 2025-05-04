@@ -56,6 +56,16 @@
       cursor: pointer;
       text-decoration: underline;
     }
+    .termos {
+      font-size: 13px;
+      color: #ccc;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .termos a {
+      color: #00ff99;
+      text-decoration: underline;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -74,7 +84,13 @@
       <input type="password" id="cadastro-senha" placeholder="Senha" required />
       <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
       <button type="submit">Cadastrar</button>
+      <p class="termos">
+        Ao se cadastrar você concorda com nossos 
+        <a href="termos.html">Termos de Uso</a> e 
+        <a href="privacidade.html">Política de Privacidade</a>.
+      </p>
     </form>
+
     <div id="codigo-gerado"></div>
 
     <h3>Entrar</h3>
