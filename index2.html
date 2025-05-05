@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Painel Administrativo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      font-size: 0.9em;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <h2>Login Administrativo</h2>
+  <input type="text" id="usuario" placeholder="Usuário">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="verificarLogin()">Entrar</button>
+  <p class="error" id="erroLogin">Usuário ou senha incorretos!</p>
+</div>
+
+<script>
+  function verificarLogin() {
+    const usuario = document.getElementById('usuario').value.trim();
+    const senha = document.getElementById('senha').value.trim();
+    const erro = document.getElementById('erroLogin');
+
+    // Verificação segura no JavaScript
+    if (usuario === "admir" && senha === "LUIS00") {
+      // Redireciona para o painel (psicotico.html)
+      window.location.href = "psicotico.html";
+    } else {
+      erro.style.display = "block";
+    }
+  }
+</script>
+
+</body>
+</html>
