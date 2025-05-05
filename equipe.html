@@ -95,11 +95,14 @@
   <div class="linha"><span id="lv3-qtd">0 Quantidade efetiva</span></div>
   <div class="linha"><span id="lv3-bonus">R$ 0,00 Bônus</span></div>
 
-  <div class="linha"><strong>Número de equipe</strong><span id="totalEquipe">0</span></div>
+  <div class="linha"><strong>Número de equipe</strong><span id="total-users">0</span></div>
   <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
 
   <button onclick="mostrarMembros()">Ver Membros da Equipe</button>
   <div id="membros-lista"></div>
+
+  <!-- Adicionando os elementos que você pediu -->
+  <ul id="invited-users"></ul>
 </div>
 
 <script>
@@ -120,16 +123,19 @@ if (!telefoneLogado) {
   window.location.href = "index.html";
 }
 
+let meuCodigo = "";
+
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
-    document.getElementById("codigo").innerText = user.codigo;
-    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + user.codigo;
-    carregarEquipe(user.codigo);
+    meuCodigo = user.codigo;
+    document.getElementById("codigo").innerText = meuCodigo;
+    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+    carregarEquipe(meuCodigo);
   }
 });
 
-function carregarEquipe(meuCodigo) {
+function carregarEquipe(codigo) {
   db.ref("usuarios").once("value").then(snapshot => {
     let lv1 = 0, lv2 = 0, lv3 = 0;
     let bonus1 = 0, bonus2 = 0, bonus3 = 0;
@@ -137,24 +143,18 @@ function carregarEquipe(meuCodigo) {
 
     const usuarios = snapshot.val();
 
-    for (let telefone1 in usuarios) {
-      const user1 = usuarios[telefone1];
-      if (user1.codigoIndicacao === meuCodigo) {
-        lv1++;
-        bonus1 += 20 * 0.26;
-        membrosLv1.push(user1);
-        for (let telefone2 in usuarios) {
-          const user2 = usuarios[telefone2];
-          if (user2.codigoIndicacao === user1.codigo) {
-            lv2++;
-            bonus2 += 20 * 0.01;
-            membrosLv2.push(user2);
-            for (let telefone3 in usuarios) {
-              const user3 = usuarios[telefone3];
-              if (user3.codigoIndicacao === user2.codigo) {
-                lv3++;
-                bonus3 += 20 * 0.01;
-                membrosLv3.push(user3);
+    for (let t1 in usuarios) {
+      const u1 = usuarios[t1];
+      if (u1.codigoIndicacao === codigo) {
+        lv1++; bonus1 += 20 * 0.26; membrosLv1.push(u1);
+        for (let t2 in usuarios) {
+          const u2 = usuarios[t2];
+          if (u2.codigoIndicacao === u1.codigo) {
+            lv2++; bonus2 += 20 * 0.01; membrosLv2.push(u2);
+            for (let t3 in usuarios) {
+              const u3 = usuarios[t3];
+              if (u3.codigoIndicacao === u2.codigo) {
+                lv3++; bonus3 += 20 * 0.01; membrosLv3.push(u3);
               }
             }
           }
@@ -162,8 +162,8 @@ function carregarEquipe(meuCodigo) {
       }
     }
 
-    const totalEquipe = lv1 + lv2 + lv3;
-    const totalBonus = bonus1 + bonus2 + bonus3;
+    const total = lv1 + lv2 + lv3;
+    const bonusTotal = bonus1 + bonus2 + bonus3;
 
     document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
     document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
@@ -172,46 +172,40 @@ function carregarEquipe(meuCodigo) {
     document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
     document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
 
-    document.getElementById("totalEquipe").innerText = totalEquipe;
-    document.getElementById("total-bonus").innerText = "R$ " + totalBonus.toFixed(2).replace(".", ",");
+    document.getElementById("total-users").innerText = total;
+    document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
 
     window.membrosLv1 = membrosLv1;
     window.membrosLv2 = membrosLv2;
     window.membrosLv3 = membrosLv3;
+
+    // Lista de membros em <ul id="invited-users">
+    const ul = document.getElementById("invited-users");
+    ul.innerHTML = membrosLv1.map(m => `<li>${m.nome} - ${m.telefone}</li>`).join("");
   });
 }
 
 function mostrarMembros() {
-  let listaMembros = "<h3>Membros LV1</h3>" + gerarLista(window.membrosLv1);
-  listaMembros += "<h3>Membros LV2</h3>" + gerarLista(window.membrosLv2);
-  listaMembros += "<h3>Membros LV3</h3>" + gerarLista(window.membrosLv3);
-  document.getElementById("membros-lista").innerHTML = listaMembros;
+  let lista = "<h3>Membros LV1</h3>" + gerarLista(window.membrosLv1);
+  lista += "<h3>Membros LV2</h3>" + gerarLista(window.membrosLv2);
+  lista += "<h3>Membros LV3</h3>" + gerarLista(window.membrosLv3);
+  document.getElementById("membros-lista").innerHTML = lista;
 }
 
 function gerarLista(membros) {
-  if (membros.length === 0) {
-    return "<p>Nenhum membro encontrado.</p>";
-  }
-  return membros.map(membro => `
-    <div class="membro">
-      <p><strong>Nome:</strong> ${membro.nome}</p>
-      <p><strong>Telefone:</strong> ${membro.telefone}</p>
-      <p><strong>Nível:</strong> ${membro.nivel || 'Não definido'}</p>
-    </div>
-  `).join("");
+  return membros.map(m => `<div class="membro"><span>${m.nome}</span> - <span>${m.telefone}</span></div>`).join("");
 }
 
-function copiarTexto(id) {
-  const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Texto copiado: " + texto);
-  });
+function copiarTexto(elementId) {
+  const texto = document.getElementById(elementId).innerText;
+  navigator.clipboard.writeText(texto);
+  alert("Texto copiado!");
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Junte-se ao meu time na H Invest! Link: " + document.getElementById("link").innerText;
-  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
-  window.open(url, "_blank");
+  const link = document.getElementById("link").innerText;
+  const url = `https://api.whatsapp.com/send?text=Eu te convido a participar da plataforma H Invest! Acesse com meu código: ${link}`;
+  window.open(url, '_blank');
 }
 </script>
 </body>
