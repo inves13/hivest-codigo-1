@@ -84,11 +84,6 @@
       <input type="password" id="cadastro-senha" placeholder="Senha" required />
       <input type="text" id="cadastro-codigo" placeholder="Código de Indicação (Opcional)" />
       <button type="submit">Cadastrar</button>
-      <p class="termos">
-        Ao se cadastrar você concorda com nossos 
-        <a href="termos.html">Termos de Uso</a> e 
-        <a href="privacidade.html">Política de Privacidade</a>.
-      </p>
     </form>
 
     <div id="codigo-gerado"></div>
@@ -130,13 +125,27 @@
       const senha = document.getElementById("cadastro-senha").value.trim();
       const codigoIndicacao = document.getElementById("cadastro-codigo").value.trim() || null;
 
+      // Validação dos dados
       if (!nome || !telefone || !email || !senha) {
         alert("Preencha todos os campos obrigatórios.");
         return;
       }
 
-      if (!/^\d{8,15}$/.test(telefone)) {
-        alert("Telefone inválido. Digite apenas números.");
+      // Validando o telefone (ex: 11912345678)
+      if (!/^\d{10,11}$/.test(telefone)) {
+        alert("Telefone inválido. Use DDD + número, ex: 11912345678");
+        return;
+      }
+
+      // Validando o e-mail
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("E-mail inválido. Digite um e-mail real.");
+        return;
+      }
+
+      // Validando a senha (mínimo de 6 caracteres, com letras e números)
+      if (!/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{6,}$/.test(senha)) {
+        alert("A senha deve conter no mínimo 6 caracteres, com letras e números.");
         return;
       }
 
