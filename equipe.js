@@ -4,7 +4,7 @@ const firebaseConfig = {
   authDomain: "hinvest-f4354.firebaseapp.com",
   databaseURL: "https://hinvest-f4354-default-rtdb.firebaseio.com",
   projectId: "hinvest-f4354",
-  storageBucket: "hinvest-f4354.firebasestorage.app",
+  storageBucket: "hinvest-f4354.appspot.com",
   messagingSenderId: "646397677016",
   appId: "1:646397677016:web:f05ca27a38439568bff6ad"
 };
