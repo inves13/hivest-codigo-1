@@ -1,3 +1,4 @@
+<!-- CÓDIGO COMPLETO COM O LINK ATUALIZADO -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -126,7 +127,7 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
     if (meuCodigo.length < 8) {
       meuCodigo = meuCodigo.padStart(8, '0');
     }
-    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=5%0A%0AVocê";
     document.getElementById("codigo-link").innerText = codigoLink;
     carregarEquipe(meuCodigo);
   }
