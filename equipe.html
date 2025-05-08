@@ -1,3 +1,4 @@
+<!-- CÓDIGO COMPLETO COM O LINK ATUALIZADO -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -100,7 +101,6 @@
 </div>
 
 <script>
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCKSKnVC8dNWmiMrNr1j4rMLfQTlOrqzVM",
   authDomain: "hinvest-f4354.firebaseapp.com",
@@ -127,7 +127,7 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
     if (meuCodigo.length < 8) {
       meuCodigo = meuCodigo.padStart(8, '0');
     }
-    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=5%0A%0AVocê";
     document.getElementById("codigo-link").innerText = codigoLink;
     carregarEquipe(meuCodigo);
   }
@@ -196,11 +196,13 @@ function gerarLista(membros) {
 function copiarTexto(elementId) {
   const texto = document.getElementById(elementId).innerText;
   navigator.clipboard.writeText(texto);
+  alert("Texto copiado!");
 }
 
 function compartilharWhatsApp() {
-  const mensagem = `Confira o meu código de convite no H Invest: ${meuCodigo}\nAcesse agora e entre para minha equipe! ${encodeURIComponent("https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo)}`;
-  const url = `https://wa.me/?text=${mensagem}`;
+  const link = document.getElementById("codigo-link").innerText;
+  const texto = `Eu te convidei para o H Invest, use o código ${link}`;
+  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
   window.open(url, "_blank");
 }
 </script>
