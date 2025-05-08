@@ -1,3 +1,4 @@
+<!-- CÓDIGO COMPLETO ATUALIZADO -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -56,16 +57,6 @@
       cursor: pointer;
       text-decoration: underline;
     }
-    .termos {
-      font-size: 13px;
-      color: #ccc;
-      text-align: center;
-      margin-top: 10px;
-    }
-    .termos a {
-      color: #00ff99;
-      text-decoration: underline;
-    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -117,6 +108,15 @@
       document.getElementById("cadastro-codigo").value = codigoIndicado;
     }
 
+    function gerarCodigoAlfanumerico(tamanho = 8) {
+      const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let codigo = '';
+      for (let i = 0; i < tamanho; i++) {
+        codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      }
+      return codigo;
+    }
+
     document.getElementById("cadastro-form").addEventListener("submit", function(e) {
       e.preventDefault();
       const nome = document.getElementById("cadastro-nome").value.trim();
@@ -125,25 +125,21 @@
       const senha = document.getElementById("cadastro-senha").value.trim();
       const codigoIndicacao = document.getElementById("cadastro-codigo").value.trim() || null;
 
-      // Validação dos dados
       if (!nome || !telefone || !email || !senha) {
         alert("Preencha todos os campos obrigatórios.");
         return;
       }
 
-      // Validando o telefone (ex: 11912345678)
       if (!/^\d{10,11}$/.test(telefone)) {
         alert("Telefone inválido. Use DDD + número, ex: 11912345678");
         return;
       }
 
-      // Validando o e-mail
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         alert("E-mail inválido. Digite um e-mail real.");
         return;
       }
 
-      // Validando a senha (mínimo de 6 caracteres, com letras e números)
       if (!/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{6,}$/.test(senha)) {
         alert("A senha deve conter no mínimo 6 caracteres, com letras e números.");
         return;
@@ -153,39 +149,36 @@
         if (snapshot.exists()) {
           alert("Já existe uma conta com esse telefone.");
         } else {
-          db.ref("usuarios").once("value").then(snapshot => {
-            const total = snapshot.numChildren() + 1;
-            const meuCodigo = total;
+          const meuCodigo = gerarCodigoAlfanumerico(8);
 
-            db.ref("usuarios/" + telefone).set({
-              nome,
-              telefone,
-              email,
-              senha,
-              saldo: 20,
-              renda: 0,
-              recebimento: 0,
-              ultimoCheckin: "",
-              codigoIndicacao,
-              codigo: meuCodigo,
-              timestamp: Date.now()
-            }).then(() => {
-              document.getElementById("codigo-gerado").innerText =
-                "Cadastro realizado!\nSeu código de indicação: " + meuCodigo +
-                "\nLink: https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+          db.ref("usuarios/" + telefone).set({
+            nome,
+            telefone,
+            email,
+            senha,
+            saldo: 20,
+            renda: 0,
+            recebimento: 0,
+            ultimoCheckin: "",
+            codigoIndicacao,
+            codigo: meuCodigo,
+            timestamp: Date.now()
+          }).then(() => {
+            document.getElementById("codigo-gerado").innerText =
+              "Cadastro realizado!\nSeu código de indicação: " + meuCodigo +
+              "\nLink: https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
 
-              localStorage.setItem("telefoneLogado", telefone);
+            localStorage.setItem("telefoneLogado", telefone);
 
-              if (codigoIndicacao) {
-                db.ref("indicacoes/" + codigoIndicacao + "/" + telefone).set({
-                  nome, telefone, timestamp: Date.now()
-                });
-              }
+            if (codigoIndicacao) {
+              db.ref("indicacoes/" + codigoIndicacao + "/" + telefone).set({
+                nome, telefone, timestamp: Date.now()
+              });
+            }
 
-              setTimeout(() => {
-                window.location.href = "H.html";
-              }, 4000);
-            });
+            setTimeout(() => {
+              window.location.href = "H.html";
+            }, 4000);
           });
         }
       });
