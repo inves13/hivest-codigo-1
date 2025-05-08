@@ -65,13 +65,8 @@
 <div class="box">
   <div class="label">Código de Convite</div>
   <div class="linha">
-    <span id="codigo">Carregando...</span>
-    <button onclick="copiarTexto('codigo')">Copiar</button>
-  </div>
-  <div class="label">Link de convite</div>
-  <div class="linha">
-    <span id="link">Carregando...</span>
-    <button onclick="copiarTexto('link')">Copiar</button>
+    <span id="codigo-link">Carregando...</span>
+    <button onclick="copiarTexto('codigo-link')">Copiar</button>
   </div>
   <div class="linha">
     <strong>Compartilhar</strong>
@@ -101,7 +96,6 @@
   <button onclick="mostrarMembros()">Ver Membros da Equipe</button>
   <div id="membros-lista"></div>
 
-  <!-- Adicionando os elementos que você pediu -->
   <ul id="invited-users"></ul>
 </div>
 
@@ -129,8 +123,11 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
     meuCodigo = user.codigo;
-    document.getElementById("codigo").innerText = meuCodigo;
-    document.getElementById("link").innerText = "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+    if (meuCodigo.length < 8) {
+      meuCodigo = meuCodigo.padStart(8, '0');
+    }
+    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
+    document.getElementById("codigo-link").innerText = codigoLink;
     carregarEquipe(meuCodigo);
   }
 });
@@ -179,7 +176,6 @@ function carregarEquipe(codigo) {
     window.membrosLv2 = membrosLv2;
     window.membrosLv3 = membrosLv3;
 
-    // Lista de membros em <ul id="invited-users">
     const ul = document.getElementById("invited-users");
     ul.innerHTML = membrosLv1.map(m => `<li>${m.nome} - ${m.telefone}</li>`).join("");
   });
@@ -203,8 +199,9 @@ function copiarTexto(elementId) {
 }
 
 function compartilharWhatsApp() {
-  const link = document.getElementById("link").innerText;
-  const url = `https://api.whatsapp.com/send?text=Eu te convido a participar da plataforma H Invest! Acesse com meu código: ${link}`;
+  const link = document.getElementById("codigo-link").innerText;
+  const texto = `Eu te convido a participar da plataforma H Invest! Acesse com meu código: ${link}%0A%0AVocê pode ganhar dinheiro de verdade indicando amigos e investindo com segurança.`;
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
   window.open(url, '_blank');
 }
 </script>
