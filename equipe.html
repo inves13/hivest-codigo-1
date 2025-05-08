@@ -200,8 +200,9 @@ function copiarTexto(elementId) {
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Confira o meu código de convite no H Invest: " + meuCodigo;
-  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+  // A variável meuCodigo já contém o código do usuário
+  const mensagem = `Confira o meu código de convite no H Invest: ${meuCodigo}`;
+  const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
   window.open(url, "_blank");
 }
 </script>
