@@ -21,7 +21,7 @@
       width: 90%;
       max-width: 400px;
     }
-    .buy-button, .meus-produtos-button, .coletar-button {
+    .buy-button, .meus-produtos-button, .coletar-button, .voltar-button {
       background: #28a745;
       color: white;
       padding: 10px;
@@ -34,13 +34,16 @@
     #planos, #meus-produtos {
       margin-top: 20px;
     }
-    .comprado {
-      color: green;
-      font-weight: bold;
-    }
     .contador {
       font-size: 18px;
       color: yellow;
+    }
+    .info-text {
+      background-color: #111;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      font-size: 15px;
     }
   </style>
 </head>
@@ -49,11 +52,16 @@
   <h1>Comprar Planos</h1>
   <h2>Saldo: R$ <span id="saldo">0.00</span></h2>
 
+  <div class="info-text">
+    Cada plano rende 5% ao dia durante 50 dias. Após a compra, você deve coletar os rendimentos diariamente. Se não coletar em 24 horas, o sistema não acumula os lucros, então colete sempre dentro do prazo.
+  </div>
+
   <button class="meus-produtos-button" onclick="mostrarMeusProdutos()">Meus Produtos</button>
 
   <div id="planos"></div>
   <div id="meus-produtos" style="display:none;"></div>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -70,7 +78,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const userId = localStorage.getItem("telefoneLogado");
     const userRef = db.ref("usuarios/" + userId);
 
@@ -121,7 +128,6 @@
       userRef.once("value").then(snapshot => {
         const data = snapshot.val() || {};
         const saldoAtual = parseFloat(data.saldoConta || 0);
-
         if (saldoAtual < valor) {
           alert("Saldo insuficiente!");
           return;
@@ -138,7 +144,7 @@
           imagem: `imagens/PLANO_${valor}.png`,
           status: "comprado",
           tempoCompra: new Date().getTime(),
-          ultimoRetorno: new Date().getTime() // Marca o tempo do último retorno
+          ultimoRetorno: new Date().getTime()
         };
 
         investimentos.push(novoInvestimento);
@@ -158,21 +164,26 @@
       userRef.once("value").then(snapshot => {
         const data = snapshot.val() || {};
         const investimentos = data.investimentos || [];
-
         const container = document.getElementById("meus-produtos");
+
         container.innerHTML = "<h2>Meus Produtos</h2>";
         document.getElementById("planos").style.display = "none";
         container.style.display = "block";
+
+        const btnVoltar = document.createElement("button");
+        btnVoltar.className = "voltar-button";
+        btnVoltar.textContent = "Voltar aos Planos";
+        btnVoltar.onclick = atualizarSaldo;
+        container.appendChild(btnVoltar);
 
         if (investimentos.length === 0) {
           container.innerHTML += "<p>Você ainda não comprou nenhum plano.</p>";
         } else {
           investimentos.forEach((inv, index) => {
-            const tempoCompra = inv.tempoCompra;
             const agora = new Date().getTime();
-            const horasRestantes = Math.max(24 - (agora - inv.ultimoRetorno) / (1000 * 60 * 60), 0); // Horas restantes para completar as 24h
+            const horasRestantes = Math.max(24 - (agora - inv.ultimoRetorno) / (1000 * 60 * 60), 0);
+            const lucroTotal = inv.retornoDiario * 50;
 
-            const lucroTotal = inv.retornoDiario * 50; // Lucro total com base em 50 dias
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
@@ -197,12 +208,11 @@
       userRef.once("value").then(snapshot => {
         const data = snapshot.val() || {};
         const saldoAtual = parseFloat(data.saldoConta || 0);
-
         const novoSaldo = saldoAtual + retornoDiario;
         const investimentos = data.investimentos || [];
 
-        investimentos[index].status = "retornado"; // Atualiza o status do plano para "retornado"
-        investimentos[index].ultimoRetorno = new Date().getTime(); // Atualiza o horário do último retorno
+        investimentos[index].status = "retornado";
+        investimentos[index].ultimoRetorno = new Date().getTime();
 
         userRef.update({
           saldoConta: novoSaldo,
