@@ -127,7 +127,7 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
     if (meuCodigo.length < 8) {
       meuCodigo = meuCodigo.padStart(8, '0');
     }
-    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=5%0A%0AVocê";
+    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo;
     document.getElementById("codigo-link").innerText = codigoLink;
     carregarEquipe(meuCodigo);
   }
@@ -196,13 +196,11 @@ function gerarLista(membros) {
 function copiarTexto(elementId) {
   const texto = document.getElementById(elementId).innerText;
   navigator.clipboard.writeText(texto);
-  alert("Texto copiado!");
 }
 
 function compartilharWhatsApp() {
-  // A variável meuCodigo já contém o código do usuário
-  const mensagem = `Confira o meu código de convite no H Invest: ${meuCodigo}`;
-  const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+  const mensagem = `Confira o meu código de convite no H Invest: ${meuCodigo}\nAcesse agora e entre para minha equipe! ${encodeURIComponent("https://inves13.github.io/hivest-codigo-1/?codigo=" + meuCodigo)}`;
+  const url = `https://wa.me/?text=${mensagem}`;
   window.open(url, "_blank");
 }
 </script>
