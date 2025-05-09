@@ -180,6 +180,19 @@ function carregarEquipe(codigo) {
 
     document.getElementById("total-users").innerText = total;
     document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
+
+    // Adiciona o bônus ao saldo de conta do usuário
+    const bonusIndicacao = bonus1 + bonus2 + bonus3;
+    if (bonusIndicacao > 0) {
+      const saldoAtual = user.saldoConta || 0;
+      const novoSaldo = saldoAtual + bonusIndicacao;
+
+      db.ref("usuarios/" + telefoneLogado).update({
+        saldoConta: novoSaldo
+      }).then(() => {
+        console.log('Bônus de indicação adicionado ao saldo da conta.');
+      });
+    }
   });
 }
 
@@ -217,19 +230,20 @@ function mostrarMembros() {
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
+function mascararTelefone(telefone) {
+  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+}
+
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
   navigator.clipboard.writeText(texto);
+  alert('Texto copiado: ' + texto);
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Junte-se à minha equipe H Invest com meu código " + meuCodigo;
+  const mensagem = "Junte-se à minha equipe H Invest! " + meuCodigo;
   const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
   window.open(url, "_blank");
-}
-
-function mascararTelefone(telefone) {
-  return telefone.slice(0, 2) + "*****" + telefone.slice(-2);
 }
 </script>
 </body>
