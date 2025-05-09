@@ -189,15 +189,24 @@ function carregarEquipe(codigo) {
     for (let t1 in usuarios) {
       const u1 = usuarios[t1];
       if (u1.codigoIndicacao === codigo) {
-        lv1++; bonus1 += 20 * 0.26; membrosLv1.push(u1);
+        lv1++; 
+        bonus1 += 20 * 0.26;
+        membrosLv1.push(u1);
+        console.log(`LV1 - Usuário: ${u1.nome} - Código: ${u1.codigoIndicacao}`); // Verificando LV1
         for (let t2 in usuarios) {
           const u2 = usuarios[t2];
           if (u2.codigoIndicacao === u1.codigo) {
-            lv2++; bonus2 += 20 * 0.01; membrosLv2.push(u2);
+            lv2++; 
+            bonus2 += 20 * 0.01; 
+            membrosLv2.push(u2);
+            console.log(`LV2 - Usuário: ${u2.nome} - Código: ${u2.codigoIndicacao}`); // Verificando LV2
             for (let t3 in usuarios) {
               const u3 = usuarios[t3];
               if (u3.codigoIndicacao === u2.codigo) {
-                lv3++; bonus3 += 20 * 0.01; membrosLv3.push(u3);
+                lv3++; 
+                bonus3 += 20 * 0.01; 
+                membrosLv3.push(u3);
+                console.log(`LV3 - Usuário: ${u3.nome} - Código: ${u3.codigoIndicacao}`); // Verificando LV3
               }
             }
           }
@@ -208,42 +217,44 @@ function carregarEquipe(codigo) {
     const total = lv1 + lv2 + lv3;
     const bonusTotal = bonus1 + bonus2 + bonus3;
 
-    document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
-    document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
-    document.getElementById("lv2-qtd").innerText = lv2 + " Quantidade efetiva";
-    document.getElementById("lv2-bonus").innerText = "R$ " + bonus2.toFixed(2).replace(".", ",");
-    document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
-    document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
+    document.getElementById("lv1-qtd").innerText = `${lv1} Quantidade efetiva`;
+    document.getElementById("lv1-bonus").innerText = `R$ ${bonus1.toFixed(2)} Bônus`;
+    document.getElementById("lv2-qtd").innerText = `${lv2} Quantidade efetiva`;
+    document.getElementById("lv2-bonus").innerText = `R$ ${bonus2.toFixed(2)} Bônus`;
+    document.getElementById("lv3-qtd").innerText = `${lv3} Quantidade efetiva`;
+    document.getElementById("lv3-bonus").innerText = `R$ ${bonus3.toFixed(2)} Bônus`;
     document.getElementById("total-users").innerText = total;
-    document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
+    document.getElementById("total-bonus").innerText = `R$ ${bonusTotal.toFixed(2)}`;
   });
 }
 
 function copiarTexto(id) {
-  var texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
     alert("Texto copiado!");
   });
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Junte-se à minha equipe! Código: " + meuCodigo;
-  const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
+  const texto = "Venha fazer parte da minha equipe! " + document.getElementById("codigo-link").innerText;
+  const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(texto);
   window.open(url, "_blank");
 }
 
 function mostrarMembros() {
   db.ref("usuarios").once("value").then(snapshot => {
-    const membros = snapshot.val();
-    const membrosLista = document.getElementById("membros-lista");
-    membrosLista.innerHTML = ""; // Limpa a lista de membros
-
-    for (let t in membros) {
-      const usuario = membros[t];
-      const divMembro = document.createElement("div");
-      divMembro.classList.add("membro");
-      divMembro.innerText = usuario.nome + " - " + usuario.telefone;
-      membrosLista.appendChild(divMembro);
+    const usuarios = snapshot.val();
+    const listaMembros = document.getElementById("membros-lista");
+    listaMembros.innerHTML = "";
+    
+    for (let t1 in usuarios) {
+      const u1 = usuarios[t1];
+      if (u1.codigoIndicacao === meuCodigo) {
+        const membro = document.createElement("div");
+        membro.className = "membro";
+        membro.innerHTML = `<strong>${u1.nome}</strong><br>Código: ${u1.codigo}<br>Status: ${u1.status}`;
+        listaMembros.appendChild(membro);
+      }
     }
   });
 }
