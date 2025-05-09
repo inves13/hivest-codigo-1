@@ -188,8 +188,8 @@ function mostrarMembros() {
   listaMembros += membrosLv1.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
+      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -198,8 +198,8 @@ function mostrarMembros() {
   listaMembros += membrosLv2.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
+      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -208,8 +208,8 @@ function mostrarMembros() {
   listaMembros += membrosLv3.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
+      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -226,6 +226,10 @@ function compartilharWhatsApp() {
   const mensagem = "Junte-se à minha equipe H Invest com meu código " + meuCodigo;
   const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
   window.open(url, "_blank");
+}
+
+function mascararTelefone(telefone) {
+  return telefone.slice(0, 2) + "*****" + telefone.slice(-2);
 }
 </script>
 </body>
