@@ -1,4 +1,3 @@
-<!-- CÓDIGO COMPLETO COM O LINK ATUALIZADO -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -123,15 +122,25 @@ let meuCodigo = "";
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
-    meuCodigo = user.codigo;
-    if (meuCodigo.length < 8) {
-      meuCodigo = meuCodigo.padStart(8, '0');
+    // Gerando um código único para cada usuário
+    if (!user.codigo) {
+      const codigoUnico = gerarCodigoUnico();
+      db.ref("usuarios/" + telefoneLogado).update({ codigo: codigoUnico });
+      meuCodigo = codigoUnico;
+    } else {
+      meuCodigo = user.codigo;
     }
-    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=5%0A%0AVocê";
+
+    const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + encodeURIComponent(meuCodigo);
     document.getElementById("codigo-link").innerText = codigoLink;
     carregarEquipe(meuCodigo);
   }
 });
+
+function gerarCodigoUnico() {
+  // Gerar um código único, pode ser um ID aleatório ou qualquer outro critério
+  return Math.random().toString(36).substr(2, 8).toUpperCase();
+}
 
 function carregarEquipe(codigo) {
   db.ref("usuarios").once("value").then(snapshot => {
@@ -176,32 +185,29 @@ function carregarEquipe(codigo) {
     window.membrosLv1 = membrosLv1;
     window.membrosLv2 = membrosLv2;
     window.membrosLv3 = membrosLv3;
-
-    const ul = document.getElementById("invited-users");
-    ul.innerHTML = membrosLv1.map(m => `<li>${m.nome} - ${m.telefone}</li>`).join("");
   });
 }
 
 function mostrarMembros() {
-  let lista = "<h3>Membros LV1</h3>" + gerarLista(window.membrosLv1);
-  lista += "<h3>Membros LV2</h3>" + gerarLista(window.membrosLv2);
-  lista += "<h3>Membros LV3</h3>" + gerarLista(window.membrosLv3);
-  document.getElementById("membros-lista").innerHTML = lista;
+  let listaMembros = "<h3>Lv1 Membros</h3>";
+  listaMembros += membrosLv1.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+
+  listaMembros += "<h3>Lv2 Membros</h3>";
+  listaMembros += membrosLv2.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+
+  listaMembros += "<h3>Lv3 Membros</h3>";
+  listaMembros += membrosLv3.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+
+  document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
-function gerarLista(membros) {
-  return membros.map(m => `<div class="membro"><span>${m.nome}</span> - <span>${m.telefone}</span></div>`).join("");
-}
-
-function copiarTexto(elementId) {
-  const texto = document.getElementById(elementId).innerText;
+function copiarTexto(id) {
+  const texto = document.getElementById(id).innerText;
   navigator.clipboard.writeText(texto);
-  alert("Texto copiado!");
 }
 
 function compartilharWhatsApp() {
-  const link = document.getElementById("codigo-link").innerText;
-  const texto = `Eu te convidei para o H Invest, use o código ${link}`;
+  const texto = `Eu te convidei para o H Invest, use o código ${meuCodigo} - https://inves13.github.io/hivest-codigo-1/?codigo=${encodeURIComponent(meuCodigo)}`;
   const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
   window.open(url, "_blank");
 }
