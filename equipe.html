@@ -119,6 +119,42 @@ if (!telefoneLogado) {
 
 let meuCodigo = "";
 
+// Captura o código de convite da URL (quando o usuário se registra com o link)
+const urlParams = new URLSearchParams(window.location.search);
+const codigoConvite = urlParams.get('codigo');
+
+if (codigoConvite) {
+  // Verifica se o código de convite existe e se o usuário está se registrando
+  db.ref('usuarios').orderByChild('codigo').equalTo(codigoConvite).once('value')
+    .then(snapshot => {
+      if (snapshot.exists()) {
+        // Bônus a ser adicionado (exemplo: R$ 20,00)
+        const bonus = 20;
+
+        // Obtém o telefone logado
+        const telefoneLogado = localStorage.getItem('telefoneLogado');
+        
+        if (telefoneLogado) {
+          // Adiciona o bônus diretamente ao saldo da conta do usuário
+          db.ref('usuarios/' + telefoneLogado).once('value').then(userSnapshot => {
+            const user = userSnapshot.val();
+            if (user) {
+              // Adiciona o bônus ao saldo do usuário
+              const novoSaldo = (user.saldo || 0) + bonus;
+              
+              // Atualiza o saldo no Firebase
+              db.ref('usuarios/' + telefoneLogado).update({
+                saldo: novoSaldo
+              }).then(() => {
+                console.log('Bônus adicionado ao saldo da conta');
+              });
+            }
+          });
+        }
+      }
+    });
+}
+
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
@@ -153,30 +189,15 @@ function carregarEquipe(codigo) {
     for (let t1 in usuarios) {
       const u1 = usuarios[t1];
       if (u1.codigoIndicacao === codigo) {
-        lv1++; 
-        // Verifica se o usuário investiu
-        if (u1.investiu) {
-          bonus1 += 20 * 0.26; // Adiciona bônus somente se o usuário investiu
-        }
-        membrosLv1.push(u1);
+        lv1++; bonus1 += 20 * 0.26; membrosLv1.push(u1);
         for (let t2 in usuarios) {
           const u2 = usuarios[t2];
           if (u2.codigoIndicacao === u1.codigo) {
-            lv2++; 
-            // Verifica se o usuário investiu
-            if (u2.investiu) {
-              bonus2 += 20 * 0.01; // Adiciona bônus somente se o usuário investiu
-            }
-            membrosLv2.push(u2);
+            lv2++; bonus2 += 20 * 0.01; membrosLv2.push(u2);
             for (let t3 in usuarios) {
               const u3 = usuarios[t3];
               if (u3.codigoIndicacao === u2.codigo) {
-                lv3++; 
-                // Verifica se o usuário investiu
-                if (u3.investiu) {
-                  bonus3 += 20 * 0.01; // Adiciona bônus somente se o usuário investiu
-                }
-                membrosLv3.push(u3);
+                lv3++; bonus3 += 20 * 0.01; membrosLv3.push(u3);
               }
             }
           }
@@ -193,37 +214,38 @@ function carregarEquipe(codigo) {
     document.getElementById("lv2-bonus").innerText = "R$ " + bonus2.toFixed(2).replace(".", ",");
     document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
     document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
-
     document.getElementById("total-users").innerText = total;
     document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
   });
 }
 
-function mostrarMembros() {
-  db.ref("usuarios").once("value").then(snapshot => {
-    let listaMembros = "";
-    const usuarios = snapshot.val();
-    for (let t1 in usuarios) {
-      const u1 = usuarios[t1];
-      if (u1.codigoIndicacao === meuCodigo) {
-        listaMembros += `<div class="membro">${u1.nome} - ${u1.codigo}</div>`;
-      }
-    }
-    document.getElementById("membros-lista").innerHTML = listaMembros;
-  });
-}
-
 function copiarTexto(id) {
-  const texto = document.getElementById(id).innerText;
+  var texto = document.getElementById(id).innerText;
   navigator.clipboard.writeText(texto).then(() => {
     alert("Texto copiado!");
   });
 }
 
 function compartilharWhatsApp() {
-  const texto = "Junte-se a mim no H Invest! Código de Convite: " + meuCodigo;
-  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+  const mensagem = "Junte-se à minha equipe! Código: " + meuCodigo;
+  const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
   window.open(url, "_blank");
+}
+
+function mostrarMembros() {
+  db.ref("usuarios").once("value").then(snapshot => {
+    const membros = snapshot.val();
+    const membrosLista = document.getElementById("membros-lista");
+    membrosLista.innerHTML = ""; // Limpa a lista de membros
+
+    for (let t in membros) {
+      const usuario = membros[t];
+      const divMembro = document.createElement("div");
+      divMembro.classList.add("membro");
+      divMembro.innerText = usuario.nome + " - " + usuario.telefone;
+      membrosLista.appendChild(divMembro);
+    }
+  });
 }
 </script>
 </body>
