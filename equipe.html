@@ -118,47 +118,11 @@ if (!telefoneLogado) {
 }
 
 let meuCodigo = "";
-
-// Captura o código de convite da URL (quando o usuário se registra com o link)
-const urlParams = new URLSearchParams(window.location.search);
-const codigoConvite = urlParams.get('codigo');
-
-if (codigoConvite) {
-  // Verifica se o código de convite existe e se o usuário está se registrando
-  db.ref('usuarios').orderByChild('codigo').equalTo(codigoConvite).once('value')
-    .then(snapshot => {
-      if (snapshot.exists()) {
-        // Bônus a ser adicionado (exemplo: R$ 20,00)
-        const bonus = 20;
-
-        // Obtém o telefone logado
-        const telefoneLogado = localStorage.getItem('telefoneLogado');
-        
-        if (telefoneLogado) {
-          // Adiciona o bônus diretamente ao saldo da conta do usuário
-          db.ref('usuarios/' + telefoneLogado).once('value').then(userSnapshot => {
-            const user = userSnapshot.val();
-            if (user) {
-              // Adiciona o bônus ao saldo do usuário
-              const novoSaldo = (user.saldo || 0) + bonus;
-              
-              // Atualiza o saldo no Firebase
-              db.ref('usuarios/' + telefoneLogado).update({
-                saldo: novoSaldo
-              }).then(() => {
-                console.log('Bônus adicionado ao saldo da conta');
-              });
-            }
-          });
-        }
-      }
-    });
-}
+let membrosLv1 = [], membrosLv2 = [], membrosLv3 = [];
 
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
   if (user) {
-    // Gerando um código único para cada usuário
     if (!user.codigo) {
       const codigoUnico = gerarCodigoUnico();
       db.ref("usuarios/" + telefoneLogado).update({ codigo: codigoUnico });
@@ -174,7 +138,6 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
 });
 
 function gerarCodigoUnico() {
-  // Gerar um código único, pode ser um ID aleatório ou qualquer outro critério
   return Math.random().toString(36).substr(2, 8).toUpperCase();
 }
 
@@ -182,31 +145,22 @@ function carregarEquipe(codigo) {
   db.ref("usuarios").once("value").then(snapshot => {
     let lv1 = 0, lv2 = 0, lv3 = 0;
     let bonus1 = 0, bonus2 = 0, bonus3 = 0;
-    let membrosLv1 = [], membrosLv2 = [], membrosLv3 = [];
+    membrosLv1 = []; membrosLv2 = []; membrosLv3 = [];
 
     const usuarios = snapshot.val();
 
     for (let t1 in usuarios) {
       const u1 = usuarios[t1];
       if (u1.codigoIndicacao === codigo) {
-        lv1++; 
-        bonus1 += 20 * 0.26;
-        membrosLv1.push(u1);
-        console.log(`LV1 - Usuário: ${u1.nome} - Código: ${u1.codigoIndicacao}`); // Verificando LV1
+        lv1++; bonus1 += 20 * 0.26; membrosLv1.push(u1);
         for (let t2 in usuarios) {
           const u2 = usuarios[t2];
           if (u2.codigoIndicacao === u1.codigo) {
-            lv2++; 
-            bonus2 += 20 * 0.01; 
-            membrosLv2.push(u2);
-            console.log(`LV2 - Usuário: ${u2.nome} - Código: ${u2.codigoIndicacao}`); // Verificando LV2
+            lv2++; bonus2 += 20 * 0.01; membrosLv2.push(u2);
             for (let t3 in usuarios) {
               const u3 = usuarios[t3];
               if (u3.codigoIndicacao === u2.codigo) {
-                lv3++; 
-                bonus3 += 20 * 0.01; 
-                membrosLv3.push(u3);
-                console.log(`LV3 - Usuário: ${u3.nome} - Código: ${u3.codigoIndicacao}`); // Verificando LV3
+                lv3++; bonus3 += 20 * 0.01; membrosLv3.push(u3);
               }
             }
           }
@@ -217,47 +171,39 @@ function carregarEquipe(codigo) {
     const total = lv1 + lv2 + lv3;
     const bonusTotal = bonus1 + bonus2 + bonus3;
 
-    document.getElementById("lv1-qtd").innerText = `${lv1} Quantidade efetiva`;
-    document.getElementById("lv1-bonus").innerText = `R$ ${bonus1.toFixed(2)} Bônus`;
-    document.getElementById("lv2-qtd").innerText = `${lv2} Quantidade efetiva`;
-    document.getElementById("lv2-bonus").innerText = `R$ ${bonus2.toFixed(2)} Bônus`;
-    document.getElementById("lv3-qtd").innerText = `${lv3} Quantidade efetiva`;
-    document.getElementById("lv3-bonus").innerText = `R$ ${bonus3.toFixed(2)} Bônus`;
+    document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
+    document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
+    document.getElementById("lv2-qtd").innerText = lv2 + " Quantidade efetiva";
+    document.getElementById("lv2-bonus").innerText = "R$ " + bonus2.toFixed(2).replace(".", ",");
+    document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
+    document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
+
     document.getElementById("total-users").innerText = total;
-    document.getElementById("total-bonus").innerText = `R$ ${bonusTotal.toFixed(2)}`;
+    document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
   });
-}
-
-function copiarTexto(id) {
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Texto copiado!");
-  });
-}
-
-function compartilharWhatsApp() {
-  const texto = "Venha fazer parte da minha equipe! " + document.getElementById("codigo-link").innerText;
-  const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(texto);
-  window.open(url, "_blank");
 }
 
 function mostrarMembros() {
-  db.ref("usuarios").once("value").then(snapshot => {
-    const usuarios = snapshot.val();
-    const listaMembros = document.getElementById("membros-lista");
-    listaMembros.innerHTML = "";
-    
-    for (let t1 in usuarios) {
-      const u1 = usuarios[t1];
-      if (u1.codigoIndicacao === meuCodigo) {
-        const membro = document.createElement("div");
-        membro.className = "membro";
-        membro.innerHTML = `<strong>${u1.nome}</strong><br>Código: ${u1.codigo}<br>Status: ${u1.status}`;
-        listaMembros.appendChild(membro);
-      }
-    }
-  });
+  let listaMembros = "<h3>Lv1 Membros</h3>";
+  listaMembros += membrosLv1.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  listaMembros += "<h3>Lv2 Membros</h3>";
+  listaMembros += membrosLv2.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  listaMembros += "<h3>Lv3 Membros</h3>";
+  listaMembros += membrosLv3.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  document.getElementById("membros-lista").innerHTML = listaMembros;
+}
+
+function copiarTexto(id) {
+  const texto = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(texto);
+}
+
+function compartilharWhatsApp() {
+  const texto = `Eu te convidei para o H Invest! Cadastre-se usando meu código ${meuCodigo} e aproveite os bônus incríveis. Acesse: https://inves13.github.io/hivest-codigo-1/?codigo=${encodeURIComponent(meuCodigo)}`;
+  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
 }
 </script>
+
 </body>
 </html>
