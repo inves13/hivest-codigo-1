@@ -189,7 +189,7 @@ function mostrarMembros() {
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
       <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -199,7 +199,7 @@ function mostrarMembros() {
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
       <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -209,7 +209,7 @@ function mostrarMembros() {
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
       <strong>Telefone:</strong> ${membro.telefone} <br>
-      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro ? membro.dataCadastro : "Data não disponível"} <br>
       <strong>Código:</strong> ${membro.codigo}
     </div>
   `).join("");
@@ -219,16 +219,14 @@ function mostrarMembros() {
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Texto copiado!");
-  });
+  navigator.clipboard.writeText(texto);
 }
 
 function compartilharWhatsApp() {
-  const url = "https://wa.me/?text=" + encodeURIComponent("Junte-se ao meu time usando este código: " + meuCodigo);
+  const mensagem = "Junte-se à minha equipe H Invest com meu código " + meuCodigo;
+  const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
   window.open(url, "_blank");
 }
 </script>
-
 </body>
 </html>
