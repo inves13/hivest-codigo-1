@@ -185,23 +185,48 @@ function carregarEquipe(codigo) {
 
 function mostrarMembros() {
   let listaMembros = "<h3>Lv1 Membros</h3>";
-  listaMembros += membrosLv1.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  listaMembros += membrosLv1.map(membro => `
+    <div class="membro">
+      <strong>Nome:</strong> ${membro.nome} <br>
+      <strong>Telefone:</strong> ${membro.telefone} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Código:</strong> ${membro.codigo}
+    </div>
+  `).join("");
+
   listaMembros += "<h3>Lv2 Membros</h3>";
-  listaMembros += membrosLv2.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  listaMembros += membrosLv2.map(membro => `
+    <div class="membro">
+      <strong>Nome:</strong> ${membro.nome} <br>
+      <strong>Telefone:</strong> ${membro.telefone} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Código:</strong> ${membro.codigo}
+    </div>
+  `).join("");
+
   listaMembros += "<h3>Lv3 Membros</h3>";
-  listaMembros += membrosLv3.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
+  listaMembros += membrosLv3.map(membro => `
+    <div class="membro">
+      <strong>Nome:</strong> ${membro.nome} <br>
+      <strong>Telefone:</strong> ${membro.telefone} <br>
+      <strong>Data de Cadastro:</strong> ${membro.dataCadastro} <br>
+      <strong>Código:</strong> ${membro.codigo}
+    </div>
+  `).join("");
+
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto);
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Texto copiado!");
+  });
 }
 
 function compartilharWhatsApp() {
-  const texto = `Eu te convidei para o H Invest! Cadastre-se usando meu código ${meuCodigo} e aproveite os bônus incríveis. Acesse: https://inves13.github.io/hivest-codigo-1/?codigo=${encodeURIComponent(meuCodigo)}`;
-  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-  window.open(url, '_blank');
+  const url = "https://wa.me/?text=" + encodeURIComponent("Junte-se ao meu time usando este código: " + meuCodigo);
+  window.open(url, "_blank");
 }
 </script>
 
