@@ -153,15 +153,30 @@ function carregarEquipe(codigo) {
     for (let t1 in usuarios) {
       const u1 = usuarios[t1];
       if (u1.codigoIndicacao === codigo) {
-        lv1++; bonus1 += 20 * 0.26; membrosLv1.push(u1);
+        lv1++; 
+        // Verifica se o usuário investiu
+        if (u1.investiu) {
+          bonus1 += 20 * 0.26; // Adiciona bônus somente se o usuário investiu
+        }
+        membrosLv1.push(u1);
         for (let t2 in usuarios) {
           const u2 = usuarios[t2];
           if (u2.codigoIndicacao === u1.codigo) {
-            lv2++; bonus2 += 20 * 0.01; membrosLv2.push(u2);
+            lv2++; 
+            // Verifica se o usuário investiu
+            if (u2.investiu) {
+              bonus2 += 20 * 0.01; // Adiciona bônus somente se o usuário investiu
+            }
+            membrosLv2.push(u2);
             for (let t3 in usuarios) {
               const u3 = usuarios[t3];
               if (u3.codigoIndicacao === u2.codigo) {
-                lv3++; bonus3 += 20 * 0.01; membrosLv3.push(u3);
+                lv3++; 
+                // Verifica se o usuário investiu
+                if (u3.investiu) {
+                  bonus3 += 20 * 0.01; // Adiciona bônus somente se o usuário investiu
+                }
+                membrosLv3.push(u3);
               }
             }
           }
@@ -181,33 +196,32 @@ function carregarEquipe(codigo) {
 
     document.getElementById("total-users").innerText = total;
     document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
-
-    window.membrosLv1 = membrosLv1;
-    window.membrosLv2 = membrosLv2;
-    window.membrosLv3 = membrosLv3;
   });
 }
 
 function mostrarMembros() {
-  let listaMembros = "<h3>Lv1 Membros</h3>";
-  listaMembros += membrosLv1.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
-
-  listaMembros += "<h3>Lv2 Membros</h3>";
-  listaMembros += membrosLv2.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
-
-  listaMembros += "<h3>Lv3 Membros</h3>";
-  listaMembros += membrosLv3.map(membro => `<div class="membro">${membro.nome} - ${membro.codigo}</div>`).join("");
-
-  document.getElementById("membros-lista").innerHTML = listaMembros;
+  db.ref("usuarios").once("value").then(snapshot => {
+    let listaMembros = "";
+    const usuarios = snapshot.val();
+    for (let t1 in usuarios) {
+      const u1 = usuarios[t1];
+      if (u1.codigoIndicacao === meuCodigo) {
+        listaMembros += `<div class="membro">${u1.nome} - ${u1.codigo}</div>`;
+      }
+    }
+    document.getElementById("membros-lista").innerHTML = listaMembros;
+  });
 }
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto);
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Texto copiado!");
+  });
 }
 
 function compartilharWhatsApp() {
-  const texto = `Eu te convidei para o H Invest, use o código ${meuCodigo} - https://inves13.github.io/hivest-codigo-1/?codigo=${encodeURIComponent(meuCodigo)}`;
+  const texto = "Junte-se a mim no H Invest! Código de Convite: " + meuCodigo;
   const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
   window.open(url, "_blank");
 }
