@@ -20,39 +20,39 @@ const db = getDatabase(app);
 // Função para carregar os dados da equipe
 function carregarEquipe() {
   const meuCodigo = localStorage.getItem("codigoUsuario");
-
+  
   if (!meuCodigo) {
     window.location.href = "index.html";
     return;
   }
-
+  
   const dbRef = ref(db, 'usuarios');
   const conviteQuery = query(dbRef, orderByChild('codigoIndicacao'), equalTo(meuCodigo));
-
+  
   get(conviteQuery)
     .then(snapshot => {
       if (!snapshot.exists()) {
         console.log("Nenhum dado encontrado para este código de convite.");
         return;
       }
-
+      
       let totalMembros = 0;
       let totalComissao = 0;
       let lv1 = { qtd: 0, bonus: 0 };
       let lv2 = { qtd: 0, bonus: 0 };
       let lv3 = { qtd: 0, bonus: 0 };
-
+      
       const lista = document.getElementById("invited-users");
       lista.innerHTML = "";
-
+      
       snapshot.forEach(child => {
         const dados = child.val();
         totalMembros++;
-
+        
         const investimento = parseFloat(dados.investimentos?.valor || 0);
         const comissao = investimento * 0.35;
         totalComissao += comissao;
-
+        
         const nivel = dados.nivel || 1;
         if (nivel === 1) {
           lv1.qtd++;
@@ -64,19 +64,19 @@ function carregarEquipe() {
           lv3.qtd++;
           lv3.bonus += comissao;
         }
-
+        
         const li = document.createElement("li");
         li.textContent = `${dados.nome || "Sem nome"} - Investiu R$ ${investimento.toFixed(2)} - Você ganhou R$ ${comissao.toFixed(2)}`;
         lista.appendChild(li);
       });
-
+      
       document.getElementById("lv1-qtd").textContent = `${lv1.qtd} Quantidade efetiva`;
       document.getElementById("lv1-bonus").textContent = `R$ ${lv1.bonus.toFixed(2).replace('.', ',')} Bônus`;
       document.getElementById("lv2-qtd").textContent = `${lv2.qtd} Quantidade efetiva`;
       document.getElementById("lv2-bonus").textContent = `R$ ${lv2.bonus.toFixed(2).replace('.', ',')} Bônus`;
       document.getElementById("lv3-qtd").textContent = `${lv3.qtd} Quantidade efetiva`;
       document.getElementById("lv3-bonus").textContent = `R$ ${lv3.bonus.toFixed(2).replace('.', ',')} Bônus`;
-
+      
       document.getElementById("total-users").textContent = `${totalMembros} usuários convidados`;
       document.getElementById("total-bonus").textContent = `R$ ${totalComissao.toFixed(2).replace('.', ',')} ganhos totais`;
     })
