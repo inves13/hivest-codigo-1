@@ -231,40 +231,35 @@ function mostrarMembros() {
 }
 
 function mascararTelefone(telefone) {
-  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  return telefone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
 }
 
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert('Texto copiado para a área de transferência!');
-  });
+  const areaTexto = document.createElement("textarea");
+  areaTexto.value = texto;
+  document.body.appendChild(areaTexto);
+  areaTexto.select();
+  document.execCommand("copy");
+  document.body.removeChild(areaTexto);
 }
 
 function compartilharWhatsApp() {
-  const mensagem = `Confira o meu código de convite: ${meuCodigo} - ${window.location.href}`;
-  const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-  window.open(url, '_blank');
+  const mensagem = "Confira meu código de convite: " + meuCodigo;
+  window.open("https://wa.me/?text=" + encodeURIComponent(mensagem), "_blank");
 }
 
 function resgatarBônus() {
-  if (bonusResgatado) {
-    alert("Bônus já foi resgatado.");
-    return;
-  }
+  if (bonusTotal >= saldoConta) {
+    db.ref("usuarios/" + telefoneLogado).update({
+      bonusResgatado: true,
+    });
 
-  // Adiciona o valor do bônus ao saldo da conta
-  saldoConta += bonusTotal;
-  
-  // Atualiza o saldo no Firebase
-  db.ref("usuarios/" + telefoneLogado).update({ saldoConta: saldoConta, bonusResgatado: true });
-  
-  // Zera o bônus
-  bonusTotal = 0;
-  document.getElementById("total-bonus").innerText = "R$ 0,00";
-  
-  // Exibe mensagem de sucesso
-  alert(`Você resgatou R$ ${bonusTotal.toFixed(2)}! Agora o seu saldo na conta é R$ ${saldoConta.toFixed(2)}.`);
+    alert("Bônus resgatado com sucesso!");
+    location.reload(); // Recarrega a página para refletir o estado atualizado
+  } else {
+    alert("Você precisa de um bônus maior ou igual ao saldo da sua conta para resgatar.");
+  }
 }
 </script>
 </body>
