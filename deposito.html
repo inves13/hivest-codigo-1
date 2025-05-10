@@ -173,6 +173,15 @@
     .continue-btn:hover {
       background-color: #218838;
     }
+
+    .alert-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -224,6 +233,11 @@
     <button class="cancel-btn" onclick="cancelDeposit()">Cancelar</button>
     <button class="continue-btn" onclick="confirmDeposit()">Confirmar Depósito</button>
   </div>
+
+  <!-- Alerta de mensagem para depósito não processado -->
+  <div class="alert-message" id="alert-message">
+    O depósito foi feito, mas não caiu na plataforma. Entre em contato com o suporte para resolver a situação.
+  </div>
 </div>
 
 <script>
@@ -235,49 +249,54 @@
     "60": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/ad80dcdd-5a43-4723-a23c-ea33b6f800d45204000053039865802BR5907RK LTDA6009Sao Paulo62070503***6304DDFC",
     "160": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/4be0ab00-efee-4a4e-9477-cfeea9c26bdf5204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63044A9E",
     "300": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/2d0f2264-fead-49fa-bfe9-cae25b821f3c5204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63044211",
-    "450": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/0ea38309-8c2f-42bb-8f9d-beea07a3dac35204000053039865802BR5907RK LTDA6009Sao Paulo62070503***6304427B",
-    "500": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/9c49cbe9-ab63-4bb4-bc6f-a9acfd1dae675204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63043A7E",
-    "650": "pix-chave-650",
-    "700": "pix-chave-700",
-    "850": "pix-chave-850",
-    "900": "pix-chave-900",
-    "1050": "pix-chave-1050"
+    "450": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/0ea38309-8c2f-42bb-8f9d-beea07a3dac35204000053039865802BR5907RK LTDA6009Sao Paulo62070503***6304427A",
+    "500": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/d759e788-4a07-4f6a-bd73-923b57d941745204000053039865802BR5907RK LTDA6009Sao Paulo62070503***6304A4FE",
+    "650": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/72ccf1d8-4f6e-4d3a-90df-bb72db0345a65204000053039865802BR5907RK LTDA6009Sao Paulo62070503***6304F7F1",
+    "700": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/aad130a1-f4ab-4d8d-9333-32b26e2e3b265204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63046A6B",
+    "850": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/62b6fe99-1220-4c3c-bd4f-b599bb2f6b0b5204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63046F6F",
+    "900": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/92a0b3fe-502e-4234-8546-bdd7d8ac10545204000053039865802BR5907RK LTDA6009Sao Paulo62070503***630493B3",
+    "1050": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/7422e61b-90f7-4a2f-b0a5-49d1debdcbbe5204000053039865802BR5907RK LTDA6009Sao Paulo62070503***63040F77",
   };
 
   amountButtons.forEach(button => {
     button.addEventListener('click', () => {
-      amountButtons.forEach(btn => btn.classList.remove('selected'));
-      button.classList.add('selected');
       selectedValue = button.getAttribute('data-value');
       selectedAmountDisplay.textContent = `R$ ${selectedValue}`;
+      amountButtons.forEach(btn => btn.classList.remove('selected'));
+      button.classList.add('selected');
     });
   });
 
   function deposit() {
     if (!selectedValue) {
-      alert("Selecione um valor para depósito.");
+      alert('Por favor, selecione um valor de depósito.');
       return;
     }
-    const pixKey = pixKeys[selectedValue];
-    document.getElementById('pix-key-value').textContent = pixKey;
+
     document.getElementById('pix-key').style.display = 'block';
+    document.getElementById('pix-key-value').textContent = pixKeys[selectedValue];
     document.getElementById('action-buttons').style.display = 'flex';
   }
 
   function copyPixKey() {
-    const keyText = document.getElementById('pix-key-value').textContent;
-    navigator.clipboard.writeText(keyText).then(() => {
-      alert("Chave Pix copiada!");
-    });
+    const pixKey = document.getElementById('pix-key-value').textContent;
+    navigator.clipboard.writeText(pixKey)
+      .then(() => alert('Chave Pix copiada com sucesso!'))
+      .catch(() => alert('Erro ao copiar chave Pix.'));
   }
 
   function cancelDeposit() {
-    location.reload();
+    document.getElementById('pix-key').style.display = 'none';
+    document.getElementById('action-buttons').style.display = 'none';
+    selectedValue = null;
+    selectedAmountDisplay.textContent = 'R$ 0';
   }
 
   function confirmDeposit() {
-    alert("Depósito enviado. Aguardando confirmação da equipe.");
-    location.reload();
+    // Adicionar lógica de verificação de depósito aqui
+    // Por exemplo, se o depósito não cair, exibe a mensagem de alerta
+
+    document.getElementById('alert-message').style.display = 'block';
   }
 </script>
 
