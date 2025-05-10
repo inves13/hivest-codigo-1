@@ -124,6 +124,7 @@ let meuCodigo = "";
 let membrosLv1 = [], membrosLv2 = [], membrosLv3 = [];
 let bonusTotal = 0; // Variável para armazenar o bônus total
 let saldoConta = 60.00; // Exemplo de saldo inicial da conta, você pode pegar isso do Firebase também
+let bonusResgatado = false; // Status de resgate
 
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
@@ -134,6 +135,12 @@ db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
       meuCodigo = codigoUnico;
     } else {
       meuCodigo = user.codigo;
+    }
+
+    if (user.bonusResgatado) {
+      bonusResgatado = true;
+      document.getElementById("btn-resgatar").disabled = true;
+      document.getElementById("btn-resgatar").innerText = "Bônus Resgatado";
     }
 
     const codigoLink = meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + encodeURIComponent(meuCodigo);
@@ -196,7 +203,7 @@ function mostrarMembros() {
       <strong>Código:</strong> ${membro.codigo} <br><br>
     </div>
   `).join("");
-  
+
   listaMembros += "<h3>Lv2 Membros</h3>";
   listaMembros += membrosLv2.map(membro => `
     <div class="membro">
@@ -236,7 +243,7 @@ function resgatarBônus() {
   saldoConta += bonusTotal;
   
   // Atualiza o saldo no Firebase
-  db.ref("usuarios/" + telefoneLogado).update({ saldoConta: saldoConta });
+  db.ref("usuarios/" + telefoneLogado).update({ saldoConta: saldoConta, bonusResgatado: true });
   
   // Zera o bônus
   bonusTotal = 0;
