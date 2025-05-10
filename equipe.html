@@ -91,7 +91,10 @@
   <div class="linha"><span id="lv3-bonus">R$ 0,00 Bônus</span></div>
 
   <div class="linha"><strong>Número de equipe</strong><span id="total-users">0</span></div>
-  <div class="linha"><strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span></div>
+  <div class="linha">
+    <strong>Bônus total</strong><span id="total-bonus">R$ 0,00</span>
+    <button id="btn-resgatar" onclick="resgatarBônus()">Resgatar</button>
+  </div>
 
   <button onclick="mostrarMembros()">Ver Membros da Equipe</button>
   <div id="membros-lista"></div>
@@ -119,6 +122,7 @@ if (!telefoneLogado) {
 
 let meuCodigo = "";
 let membrosLv1 = [], membrosLv2 = [], membrosLv3 = [];
+let bonusTotal = 0; // Variável para armazenar o bônus total
 
 db.ref("usuarios/" + telefoneLogado).once("value").then(snapshot => {
   const user = snapshot.val();
@@ -168,8 +172,7 @@ function carregarEquipe(codigo) {
       }
     }
 
-    const total = lv1 + lv2 + lv3;
-    const bonusTotal = bonus1 + bonus2 + bonus3;
+    bonusTotal = bonus1 + bonus2 + bonus3;
 
     document.getElementById("lv1-qtd").innerText = lv1 + " Quantidade efetiva";
     document.getElementById("lv1-bonus").innerText = "R$ " + bonus1.toFixed(2).replace(".", ",");
@@ -178,7 +181,7 @@ function carregarEquipe(codigo) {
     document.getElementById("lv3-qtd").innerText = lv3 + " Quantidade efetiva";
     document.getElementById("lv3-bonus").innerText = "R$ " + bonus3.toFixed(2).replace(".", ",");
 
-    document.getElementById("total-users").innerText = total;
+    document.getElementById("total-users").innerText = lv1 + lv2 + lv3;
     document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
   });
 }
@@ -214,29 +217,40 @@ function mostrarMembros() {
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
-function mascararTelefone(telefone) {
-  return `(${telefone.slice(0, 2)}) ${telefone.slice(2, 6)}-****`;
-}
-
 function formatarData(timestamp) {
   const data = new Date(timestamp);
-  const dia = String(data.getDate()).padStart(2, "0");
-  const mes = String(data.getMonth() + 1).padStart(2, "0");
-  const ano = data.getFullYear();
-  return `${dia}/${mes}/${ano}`;
+  return data.toLocaleDateString("pt-BR");
+}
+
+function mascararTelefone(telefone) {
+  const ddd = telefone.slice(0, 2); // Pegando o DDD (primeiros 2 números)
+  const prefixo = telefone.slice(2, 6); // Pegando o prefixo (próximos 4 números)
+  const sufixo = telefone.slice(6); // Pegando o sufixo (últimos 4 números)
+
+  // Substitui os dois números do meio por "**"
+  return `${ddd} ${prefixo}**${sufixo.slice(0, 4)}`;
+}
+
+function copiarTexto(elementoId) {
+  const texto = document.getElementById(elementoId).innerText;
+  navigator.clipboard.writeText(texto).then(() => {
+    alert('Texto copiado para a área de transferência!');
+  });
 }
 
 function compartilharWhatsApp() {
-  const mensagem = encodeURIComponent("Junte-se à minha equipe no H Invest! Use o código de convite para se inscrever: " + meuCodigo + " - https://inves13.github.io/hivest-codigo-1/?codigo=" + encodeURIComponent(meuCodigo));
-  const url = `https://wa.me/?text=${mensagem}`;
-  window.open(url, "_blank");
+  const mensagem = `Confira o meu código de convite: ${meuCodigo} - ${window.location.href}`;
+  const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+  window.open(url, '_blank');
 }
 
-function copiarTexto(id) {
-  const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Texto copiado: " + texto);
-  });
+function resgatarBônus() {
+  const saldoConta = 100; // Exemplo de saldo na conta
+  const novoSaldo = saldoConta + bonusTotal;
+  alert(`Você resgatou R$ ${bonusTotal.toFixed(2)}! Agora o seu saldo na conta é R$ ${novoSaldo.toFixed(2)}.`);
+  // Atualiza o saldo na Firebase ou localStorage (dependendo de como você armazena)
+  bonusTotal = 0; // Zera o bônus total após resgatar
+  document.getElementById("total-bonus").innerText = "R$ 0,00";
 }
 </script>
 </body>
