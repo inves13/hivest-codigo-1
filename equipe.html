@@ -188,9 +188,7 @@ function mostrarMembros() {
   listaMembros += membrosLv1.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
-      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
-      <strong>Código:</strong> ${membro.codigo}
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)}
     </div>
   `).join("");
 
@@ -198,9 +196,7 @@ function mostrarMembros() {
   listaMembros += membrosLv2.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
-      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
-      <strong>Código:</strong> ${membro.codigo}
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)}
     </div>
   `).join("");
 
@@ -208,29 +204,30 @@ function mostrarMembros() {
   listaMembros += membrosLv3.map(membro => `
     <div class="membro">
       <strong>Nome:</strong> ${membro.nome} <br>
-      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)} <br>
-      <strong>Data de Cadastro:</strong> ${membro.timestamp ? new Date(membro.timestamp).toLocaleDateString() : "Data não disponível"} <br>
-      <strong>Código:</strong> ${membro.codigo}
+      <strong>Telefone:</strong> ${mascararTelefone(membro.telefone)}
     </div>
   `).join("");
 
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
+function mascararTelefone(telefone) {
+  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+}
+
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(texto);
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Texto copiado!");
+  });
 }
 
 function compartilharWhatsApp() {
-  const mensagem = "Junte-se à minha equipe H Invest com meu código " + meuCodigo;
+  const mensagem = "Junte-se à minha equipe no H Invest! Use o código de convite para se inscrever: " + meuCodigo + " - " + "https://inves13.github.io/hivest-codigo-1/?codigo=" + encodeURIComponent(meuCodigo);
   const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
   window.open(url, "_blank");
 }
-
-function mascararTelefone(telefone) {
-  return telefone.slice(0, 2) + "*****" + telefone.slice(-2);
-}
 </script>
+
 </body>
 </html>
