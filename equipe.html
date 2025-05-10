@@ -191,6 +191,11 @@ function carregarEquipe(codigo) {
 
     document.getElementById("total-users").innerText = lv1 + lv2 + lv3;
     document.getElementById("total-bonus").innerText = "R$ " + bonusTotal.toFixed(2).replace(".", ",");
+
+    if (bonusResgatado) {
+      document.getElementById("btn-resgatar").disabled = true;
+      document.getElementById("btn-resgatar").innerText = "Bônus Resgatado";
+    }
   });
 }
 
@@ -225,6 +230,10 @@ function mostrarMembros() {
   document.getElementById("membros-lista").innerHTML = listaMembros;
 }
 
+function mascararTelefone(telefone) {
+  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+}
+
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
   navigator.clipboard.writeText(texto).then(() => {
@@ -239,6 +248,11 @@ function compartilharWhatsApp() {
 }
 
 function resgatarBônus() {
+  if (bonusResgatado) {
+    alert("Bônus já foi resgatado.");
+    return;
+  }
+
   // Adiciona o valor do bônus ao saldo da conta
   saldoConta += bonusTotal;
   
